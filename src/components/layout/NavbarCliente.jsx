@@ -1,0 +1,57 @@
+import { Link, useLocation } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
+import { useNavigate } from 'react-router-dom'
+
+const navItems = [
+  { label: 'Mis mascotas', path: '/cliente/mascotas' },
+  { label: 'Mis citas', path: '/cliente/citas' },
+]
+
+export function NavbarCliente() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate('/login')
+  }
+
+  return (
+    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-[#E8DDD0] z-40">
+      <div className="max-w-5xl mx-auto px-8 h-14 flex items-center justify-between">
+        <Link to="/cliente/mascotas" className="flex items-center gap-2 text-[#C2570F] font-bold text-lg">
+          <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <circle cx="10" cy="10" r="8" />
+            <path d="M10 6V14M6 10H14" />
+          </svg>
+          <span>San Jose</span>
+        </Link>
+        <div className="flex items-center gap-1 text-sm">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-[#C2570F]/10 text-[#C2570F] font-medium'
+                    : 'text-[#2C1A0E] hover:bg-[#FAF7F2]'
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+          <span className="text-[#7A6555] text-xs mx-2">|</span>
+          <button
+            onClick={handleLogout}
+            className="text-sm text-[#7A6555] hover:text-[#C2570F] transition-colors px-3 py-2"
+          >
+            Cerrar sesion
+          </button>
+        </div>
+      </div>
+    </nav>
+  )
+}

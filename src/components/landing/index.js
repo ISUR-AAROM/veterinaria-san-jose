@@ -1,0 +1,5 @@
+export { HeroSection } from './HeroSection'
+export { ServicioCard } from './ServicioCard'
+export { ServiciosGrid } from './ServiciosGrid'
+export { NosotrosSection } from './NosotrosSection'
+export { ContactoSection } from './ContactoSection'

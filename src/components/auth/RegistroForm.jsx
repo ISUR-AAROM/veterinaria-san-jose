@@ -87,44 +87,20 @@ export function RegistroForm() {
 
     const idCuenta = authData.user.id
 
-    const { data: clienteData, error: clienteError } = await supabase
-      .from('cliente')
-      .insert({
-        id_cuenta: idCuenta,
-        id_tipo_documento: cliente.id_tipo_documento,
-        numero_documento: cliente.numero_documento,
-        nombre: cliente.nombre,
-        apellido: cliente.apellido,
-        telefono: cliente.telefono,
-      })
-      .select('id')
-      .single()
-    if (clienteError) {
-      setErrorGeneral('Error al registrar el cliente')
-      return
-    }
-
-    const { data: mascotaData, error: mascotaError } = await supabase
-      .from('mascota')
-      .insert({
-        id_cliente: clienteData.id,
-        nombre: mascota.nombre,
-        id_especie: mascota.id_especie,
-        id_raza: mascota.id_raza || null,
-        fecha_nacimiento: mascota.fecha_nacimiento,
-      })
-      .select('id')
-      .single()
-    if (mascotaError) {
-      setErrorGeneral('Error al registrar la mascota')
-      return
-    }
-
-    const { error: historiaError } = await supabase.from('historia_clinica').insert({
-      id_mascota: mascotaData.id,
+    const { error: registroError } = await supabase.rpc('register_cliente', {
+      p_id_tipo_documento: cliente.id_tipo_documento,
+      p_numero_documento: cliente.numero_documento,
+      p_nombre: cliente.nombre,
+      p_apellido: cliente.apellido,
+      p_telefono: cliente.telefono,
+      p_mascota_nombre: mascota.nombre,
+      p_id_especie: mascota.id_especie,
+      p_id_raza: mascota.id_raza || null,
+      p_fecha_nacimiento: mascota.fecha_nacimiento,
     })
-    if (historiaError) {
-      setErrorGeneral('Error al crear la historia clinica')
+
+    if (registroError) {
+      setErrorGeneral('Error al completar el registro')
       return
     }
 

@@ -79,22 +79,19 @@ export function RegistroForm() {
       return
     }
 
-    const idCuenta = authData.user.id
-
-    const { error: cuentaError } = await supabase.from('cuenta').insert({
-      id: idCuenta,
-      email: cliente.email,
-    })
-    if (cuentaError) {
-      setErrorGeneral('Error al crear la cuenta')
+    if (!authData.session) {
+      setErrorGeneral('Debes confirmar tu email para continuar')
+      setTimeout(() => setErrorGeneral(''), 8000)
       return
     }
+
+    const idCuenta = authData.user.id
 
     const { data: clienteData, error: clienteError } = await supabase
       .from('cliente')
       .insert({
         id_cuenta: idCuenta,
-        id_tipo_documento: Number(cliente.id_tipo_documento),
+        id_tipo_documento: cliente.id_tipo_documento,
         numero_documento: cliente.numero_documento,
         nombre: cliente.nombre,
         apellido: cliente.apellido,
@@ -107,15 +104,27 @@ export function RegistroForm() {
       return
     }
 
-    const { error: mascotaError } = await supabase.from('mascota').insert({
-      id_cliente: clienteData.id,
-      nombre: mascota.nombre,
-      id_especie: Number(mascota.id_especie),
-      id_raza: mascota.id_raza ? Number(mascota.id_raza) : null,
-      fecha_nacimiento: mascota.fecha_nacimiento,
-    })
+    const { data: mascotaData, error: mascotaError } = await supabase
+      .from('mascota')
+      .insert({
+        id_cliente: clienteData.id,
+        nombre: mascota.nombre,
+        id_especie: mascota.id_especie,
+        id_raza: mascota.id_raza || null,
+        fecha_nacimiento: mascota.fecha_nacimiento,
+      })
+      .select('id')
+      .single()
     if (mascotaError) {
       setErrorGeneral('Error al registrar la mascota')
+      return
+    }
+
+    const { error: historiaError } = await supabase.from('historia_clinica').insert({
+      id_mascota: mascotaData.id,
+    })
+    if (historiaError) {
+      setErrorGeneral('Error al crear la historia clinica')
       return
     }
 

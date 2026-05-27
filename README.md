@@ -46,6 +46,15 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
+## Cuentas de prueba
+
+| Rol | Email | Password | Acceso |
+|-----|-------|----------|--------|
+| Administrador | admin@sanjose.pe | admin123 | /admin/login |
+| Veterinario | veterinario1@sanjose.pe | veterinario123 | /admin/login |
+| Asistente | asistente1@sanjose.pe | asistente123 | /admin/login |
+| Cliente | client1@sanjose.pe | password123 | /login |
+
 ## Scripts
 
 ```bash

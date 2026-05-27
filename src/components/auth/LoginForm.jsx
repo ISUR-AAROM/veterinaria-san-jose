@@ -17,9 +17,22 @@ export function LoginForm() {
     e.preventDefault()
     setError('')
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
     if (authError) {
       setError(authError.message)
+      setTimeout(() => setError(''), 8000)
+      return
+    }
+
+    const { data: personal } = await supabase
+      .from('personal')
+      .select('id')
+      .eq('id_cuenta', authData.user.id)
+      .single()
+
+    if (personal) {
+      await supabase.auth.signOut()
+      setError('Usa el acceso para personal')
       setTimeout(() => setError(''), 8000)
       return
     }

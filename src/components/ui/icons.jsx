@@ -59,6 +59,32 @@ export function IconGrooming({ className }) {
   )
 }
 
+export function IconMapPin({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 18C10 18 16 12.5 16 8C16 4.68629 13.3137 2 10 2C6.68629 2 4 4.68629 4 8C4 12.5 10 18 10 18Z" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="10" cy="8" r="2" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
+export function IconPhone({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.5 14.5V16.5C17.5 17.05 17.05 17.5 16.5 17.5C9.5 17.5 3.5 11.5 3.5 4.5C3.5 3.95 3.95 3.5 4.5 3.5H6.5C7.05 3.5 7.5 3.95 7.5 4.5C7.5 5.6 7.7 6.65 8.05 7.65C8.15 7.9 8.1 8.2 7.9 8.4L6.65 9.65C7.95 11.85 9.65 13.55 11.85 14.85L13.1 13.6C13.3 13.4 13.6 13.35 13.85 13.45C14.85 13.8 15.9 14 17 14C17.55 14 18 14.45 18 15V16.5H17.5Z" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+export function IconMail({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2 6L10 11L18 6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 const iconMap = {
   'Consulta General': IconStethoscope,
   'Vacunación': IconSyringe,

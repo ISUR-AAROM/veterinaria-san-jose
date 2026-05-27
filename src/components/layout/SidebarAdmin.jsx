@@ -1,90 +1,114 @@
+import { useCallback, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAdmin } from '../../context/AdminContext'
 
-const navItems = [
-  {
-    label: 'Agenda',
-    path: '/admin/agenda',
-    icon: (active) => (
-      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-        <rect x="2" y="2.5" width="12" height="11.5" rx="1.5" />
-        <path d="M11 1V4M5 1V4M2 6.5H14" />
-        <path d="M5.5 9.5L7 11L10.5 7.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Clientes',
-    path: '/admin/clientes',
-    icon: (active) => (
-      <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-        <circle cx="6" cy="5" r="2.5" />
-        <path d="M1 14C1 11.2386 3.23858 9 6 9C8.76142 9 11 11.2386 11 14" strokeLinecap="round" />
-        <circle cx="11" cy="5" r="1.8" />
-        <path d="M11 9C12.6569 9 14 10.3431 14 12" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Catalogos',
-    children: [
-      {
-        label: 'Servicios',
-        path: '/admin/catalogos/servicios',
-        icon: (active) => (
-          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-            <circle cx="8" cy="8" r="5.5" />
-            <path d="M8 5V11M5 8H11" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Salas',
-        path: '/admin/catalogos/salas',
-        icon: (active) => (
-          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-            <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
-            <path d="M5.5 6V10M8 6V10M10.5 6V10" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Plantillas',
-        path: '/admin/catalogos/plantillas',
-        icon: (active) => (
-          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-            <path d="M4 2.5H12C12.8284 2.5 13.5 3.17157 13.5 4V12C13.5 12.8284 12.8284 13.5 12 13.5H4C3.17157 13.5 2.5 12.8284 2.5 12V4C2.5 3.17157 3.17157 2.5 4 2.5Z" />
-            <path d="M5 5.5H11M5 8H9M5 10.5H7" strokeLinecap="round" />
-          </svg>
-        ),
-      },
-      {
-        label: 'Especies',
-        path: '/admin/catalogos/especies',
-        icon: (active) => (
-          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke={active ? '#fff' : '#E8DDD0'} strokeWidth="1.5">
-            <circle cx="8" cy="9" r="3" />
-            <path d="M3.5 5.5C3.5 5.5 5 3 8 3C11 3 12.5 5.5 12.5 5.5" strokeLinecap="round" />
-            <circle cx="5" cy="5" r="0.8" />
-            <circle cx="11" cy="5" r="0.8" />
-          </svg>
-        ),
-      },
-    ],
-  },
-]
+function IconAgenda({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <rect x="2" y="2.5" width="12" height="11.5" rx="1.5" />
+      <path d="M11 1V4M5 1V4M2 6.5H14" />
+      <path d="M5.5 9.5L7 11L10.5 7.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconClientes({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <circle cx="6" cy="5" r="2.5" />
+      <path d="M1 14C1 11.2386 3.23858 9 6 9C8.76142 9 11 11.2386 11 14" strokeLinecap="round" />
+      <circle cx="11" cy="5" r="1.8" />
+      <path d="M11 9C12.6569 9 14 10.3431 14 12" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconServicios({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <circle cx="8" cy="8" r="5.5" />
+      <path d="M8 5V11M5 8H11" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconSalas({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
+      <path d="M5.5 6V10M8 6V10M10.5 6V10" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconPlantillas({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <path d="M4 2.5H12C12.8284 2.5 13.5 3.17157 13.5 4V12C13.5 12.8284 12.8284 13.5 12 13.5H4C3.17157 13.5 2.5 12.8284 2.5 12V4C2.5 3.17157 3.17157 2.5 4 2.5Z" />
+      <path d="M5 5.5H11M5 8H9M5 10.5H7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconEspecies({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <circle cx="8" cy="9" r="3" />
+      <path d="M3.5 5.5C3.5 5.5 5 3 8 3C11 3 12.5 5.5 12.5 5.5" strokeLinecap="round" />
+      <circle cx="5" cy="5" r="0.8" />
+      <circle cx="11" cy="5" r="0.8" />
+    </svg>
+  )
+}
 
 export function SidebarAdmin() {
   const location = useLocation()
   const navigate = useNavigate()
   const { personal, clearPersonal } = useAdmin()
+  const navItems = useMemo(() => ([
+    {
+      label: 'Agenda',
+      path: '/admin/agenda',
+      icon: (active) => <IconAgenda className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+    },
+    {
+      label: 'Clientes',
+      path: '/admin/clientes',
+      icon: (active) => <IconClientes className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+    },
+    {
+      label: 'Catalogos',
+      children: [
+        {
+          label: 'Servicios',
+          path: '/admin/catalogos/servicios',
+          icon: (active) => <IconServicios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+        },
+        {
+          label: 'Salas',
+          path: '/admin/catalogos/salas',
+          icon: (active) => <IconSalas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+        },
+        {
+          label: 'Plantillas',
+          path: '/admin/catalogos/plantillas',
+          icon: (active) => <IconPlantillas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+        },
+        {
+          label: 'Especies',
+          path: '/admin/catalogos/especies',
+          icon: (active) => <IconEspecies className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+        },
+      ],
+    },
+  ]), [])
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await supabase.auth.signOut()
     clearPersonal()
     navigate('/admin/login')
-  }
+  }, [clearPersonal, navigate])
 
   return (
     <aside className="fixed top-0 left-0 w-60 h-screen bg-[#2C1A0E] flex flex-col z-40">

@@ -10,6 +10,7 @@ export function useRazas(idEspecie) {
 
     if (!idEspecie) {
       setRazas([])
+      setLoading(false)
       return
     }
     setLoading(true)

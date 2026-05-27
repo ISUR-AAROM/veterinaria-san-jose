@@ -8,6 +8,14 @@ Sistema web para la gestion de citas, mascotas, historia clinica y pagos de una 
 - **Backend:** Supabase (Auth, PostgreSQL, Realtime)
 - **Diseno:** Inter (Google Fonts), paleta personalizada (naranja tierra, verde salvia, blanco calido)
 
+## Alcance Fase 1
+
+- Landing page con secciones de servicios, nosotros y contacto.
+- Flujos de login y registro (clientes) con stepper.
+- Acceso de personal con validacion en tabla `personal`.
+- Paneles base para cliente y admin con navegacion.
+- Catalogos y datos de referencia listos para integracion con Supabase.
+
 ## Estructura de rutas
 
 | Ruta | Descripcion |
@@ -36,6 +44,14 @@ Configurar variables de entorno en `.env`:
 ```
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+```
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
 ```
 
 ## Proyecto

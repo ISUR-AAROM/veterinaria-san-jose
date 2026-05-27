@@ -1,8 +1,14 @@
+import { useMemo } from 'react'
 import { useServicios } from '../../hooks/useServicios'
 import { ServicioCard } from './ServicioCard'
 
 export function ServiciosGrid() {
   const { servicios, loading } = useServicios()
+  const items = useMemo(() => servicios.map((s, i) => ({
+    ...s,
+    animationDelay: `${100 + i * 100}ms`,
+    index: i,
+  })), [servicios])
 
   return (
     <section id="servicios" className="py-20 relative">
@@ -23,14 +29,14 @@ export function ServiciosGrid() {
           <p className="text-center text-sm text-[#7A6555]">Cargando servicios...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {servicios.map((s, i) => (
-              <div key={s.id} className="opacity-0 animate-fade-in-up" style={{ animationDelay: `${100 + i * 100}ms` }}>
+            {items.map((item) => (
+              <div key={item.id} className="opacity-0 animate-fade-in-up" style={{ animationDelay: item.animationDelay }}>
                 <ServicioCard
-                  nombre={s.nombre}
-                  descripcion={s.descripcion}
-                  precio={s.precio}
-                  duracionMinutos={s.duracion_minutos}
-                  index={i}
+                  nombre={item.nombre}
+                  descripcion={item.descripcion}
+                  precio={item.precio}
+                  duracionMinutos={item.duracion_minutos}
+                  index={item.index}
                 />
               </div>
             ))}

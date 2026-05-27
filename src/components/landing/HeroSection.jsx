@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Button } from '../ui'
+import { Button } from '../ui/Button'
 import { useReveal } from '../../hooks/useReveal'
 
 export function HeroSection() {

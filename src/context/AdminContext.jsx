@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AdminContext = createContext(null)
@@ -6,39 +6,57 @@ const AdminContext = createContext(null)
 export function AdminProvider({ children }) {
   const [personal, setPersonal] = useState(null)
   const [loading, setLoading] = useState(true)
+  const isMounted = useRef(false)
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setLoading(false)
-        return
-      }
-      fetchPersonal(session.user.id)
-    })
-  }, [])
-
-  async function fetchPersonal(userId) {
+  const fetchPersonal = useCallback(async (userId) => {
     const { data } = await supabase
       .from('personal')
       .select('id, rol, nombre')
       .eq('id_cuenta', userId)
       .single()
 
+    if (!isMounted.current) return
     if (data) setPersonal(data)
     setLoading(false)
-  }
+  }, [])
 
-  async function setSessionPersonal(userId) {
+  useEffect(() => {
+    isMounted.current = true
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!isMounted.current) return
+      if (!session) {
+        setLoading(false)
+        return
+      }
+      await fetchPersonal(session.user.id)
+    }
+
+    loadSession()
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [fetchPersonal])
+
+  const setSessionPersonal = useCallback(async (userId) => {
     setLoading(true)
     await fetchPersonal(userId)
-  }
+  }, [fetchPersonal])
 
-  function clearPersonal() {
+  const clearPersonal = useCallback(() => {
     setPersonal(null)
-  }
+  }, [])
+
+  const value = useMemo(() => ({
+    personal,
+    loading,
+    setSessionPersonal,
+    clearPersonal,
+  }), [personal, loading, setSessionPersonal, clearPersonal])
 
   return (
-    <AdminContext.Provider value={{ personal, loading, setSessionPersonal, clearPersonal }}>
+    <AdminContext.Provider value={value}>
       {children}
     </AdminContext.Provider>
   )

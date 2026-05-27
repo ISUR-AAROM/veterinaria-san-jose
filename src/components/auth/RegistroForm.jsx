@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { StepperHeader, FormCliente, FormMascota } from '../registro'
+import { StepperHeader } from '../registro/StepperHeader'
+import { FormCliente } from '../registro/FormCliente'
+import { FormMascota } from '../registro/FormMascota'
 import { useReveal } from '../../hooks/useReveal'
 
 const clienteVacio = {

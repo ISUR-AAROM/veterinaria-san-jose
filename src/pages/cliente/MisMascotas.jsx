@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export function MisMascotas() {
   return (
     <div className="animate-fade-in-up">
@@ -6,15 +8,15 @@ export function MisMascotas() {
           <h1 className="text-2xl font-bold text-[#2C1A0E]">Mis mascotas</h1>
           <p className="text-sm text-[#7A6555] mt-1">Administra tus mascotas registradas</p>
         </div>
-        <a
-          href="/cliente/mascotas/nueva"
+        <Link
+          to="/cliente/mascotas/nueva"
           className="inline-flex items-center gap-2 bg-[#C2570F] text-white font-medium text-sm px-4 py-2.5 rounded-lg hover:bg-[#A8480C] transition-colors"
         >
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M8 3V13M3 8H13" />
           </svg>
           Nueva mascota
-        </a>
+        </Link>
       </div>
       <div className="bg-white rounded-2xl border border-[#E8DDD0] p-14 flex flex-col items-center justify-center text-center">
         <div className="w-16 h-16 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mb-5">

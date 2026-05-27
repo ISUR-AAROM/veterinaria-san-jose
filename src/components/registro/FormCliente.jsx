@@ -1,17 +1,21 @@
+import { useMemo } from 'react'
 import { useTipoDocumento } from '../../hooks/useTipoDocumento'
-import { Input, Select, Button } from '../ui'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Select } from '../ui/Select'
 
 export function FormCliente({ data, onChange, onSubmit, errors }) {
   const { tipos } = useTipoDocumento()
 
   const handleChange = (field) => (e) => onChange({ ...data, [field]: e.target.value })
+  const tipoOptions = useMemo(() => tipos.map((t) => ({ value: t.id, label: t.nombre })), [tipos])
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Select
         label="Tipo de documento"
         placeholder="Seleccionar tipo"
-        options={tipos.map((t) => ({ value: t.id, label: t.nombre }))}
+        options={tipoOptions}
         value={data.id_tipo_documento}
         onChange={handleChange('id_tipo_documento')}
         error={errors.id_tipo_documento}

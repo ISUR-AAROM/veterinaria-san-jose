@@ -1,10 +1,11 @@
+import { useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 export function NavbarPublico() {
   const location = useLocation()
   const isLanding = location.pathname === '/'
 
-  const scrollTo = (e, id) => {
+  const scrollTo = useCallback((e, id) => {
     if (!isLanding) return
     e.preventDefault()
     if (!id) {
@@ -12,7 +13,7 @@ export function NavbarPublico() {
     } else {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     }
-  }
+  }, [isLanding])
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-[#E8DDD0] z-40">

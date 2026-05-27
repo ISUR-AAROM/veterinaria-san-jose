@@ -1,6 +1,6 @@
 import { NavbarPublico } from '../../components/layout/NavbarPublico'
 import { Footer } from '../../components/layout/Footer'
-import { AdminLoginForm } from '../../components/auth'
+import { AdminLoginForm } from '../../components/auth/AdminLoginForm'
 
 export default function Login() {
   return (

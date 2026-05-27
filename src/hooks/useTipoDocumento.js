@@ -6,13 +6,23 @@ export function useTipoDocumento() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('tipo_documento')
-      .select('id, nombre')
-      .then(({ data, error }) => {
-        if (!error) setTipos(data)
-        setLoading(false)
-      })
+    let isMounted = true
+
+    const loadTipos = async () => {
+      const { data, error } = await supabase
+        .from('tipo_documento')
+        .select('id, nombre')
+
+      if (!isMounted) return
+      if (!error) setTipos(data)
+      setLoading(false)
+    }
+
+    loadTipos()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   return { tipos, loading }

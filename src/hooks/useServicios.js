@@ -6,14 +6,24 @@ export function useServicios() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('servicio')
-      .select('id, nombre, descripcion, duracion_minutos, precio')
-      .eq('is_active', true)
-      .then(({ data, error }) => {
-        if (!error) setServicios(data)
-        setLoading(false)
-      })
+    let isMounted = true
+
+    const loadServicios = async () => {
+      const { data, error } = await supabase
+        .from('servicio')
+        .select('id, nombre, descripcion, duracion_minutos, precio')
+        .eq('is_active', true)
+
+      if (!isMounted) return
+      if (!error) setServicios(data)
+      setLoading(false)
+    }
+
+    loadServicios()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   return { servicios, loading }

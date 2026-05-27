@@ -1,11 +1,15 @@
+import { useMemo } from 'react'
 import { useEspecies } from '../../hooks/useEspecies'
-import { Input, Select, Button } from '../ui'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Select } from '../ui/Select'
 import { SelectRazaFiltrada } from './SelectRazaFiltrada'
 
 export function FormMascota({ data, onChange, onSubmit, errors, submitLabel = 'Finalizar registro' }) {
   const { especies } = useEspecies()
 
   const handleChange = (field) => (e) => onChange({ ...data, [field]: e.target.value })
+  const especieOptions = useMemo(() => especies.map((e) => ({ value: e.id, label: e.nombre })), [especies])
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -19,7 +23,7 @@ export function FormMascota({ data, onChange, onSubmit, errors, submitLabel = 'F
       <Select
         label="Especie"
         placeholder="Seleccionar especie"
-        options={especies.map((e) => ({ value: e.id, label: e.nombre }))}
+        options={especieOptions}
         value={data.id_especie}
         onChange={handleChange('id_especie')}
         error={errors.id_especie}

@@ -6,13 +6,23 @@ export function useEspecies() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('especie_mascota')
-      .select('id, nombre')
-      .then(({ data, error }) => {
-        if (!error) setEspecies(data)
-        setLoading(false)
-      })
+    let isMounted = true
+
+    const loadEspecies = async () => {
+      const { data, error } = await supabase
+        .from('especie_mascota')
+        .select('id, nombre')
+
+      if (!isMounted) return
+      if (!error) setEspecies(data)
+      setLoading(false)
+    }
+
+    loadEspecies()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   return { especies, loading }

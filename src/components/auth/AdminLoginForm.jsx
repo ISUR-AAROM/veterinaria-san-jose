@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAdmin } from '../../context/AdminContext'
-import { Button, Input } from '../ui'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
 import { useReveal } from '../../hooks/useReveal'
 
 export function AdminLoginForm() {

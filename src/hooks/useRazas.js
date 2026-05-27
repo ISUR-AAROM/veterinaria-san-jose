@@ -6,19 +6,29 @@ export function useRazas(idEspecie) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+
     if (!idEspecie) {
       setRazas([])
       return
     }
     setLoading(true)
-    supabase
-      .from('raza')
-      .select('id, nombre')
-      .eq('id_especie', idEspecie)
-      .then(({ data, error }) => {
-        if (!error) setRazas(data)
-        setLoading(false)
-      })
+    const loadRazas = async () => {
+      const { data, error } = await supabase
+        .from('raza')
+        .select('id, nombre')
+        .eq('id_especie', idEspecie)
+
+      if (!isMounted) return
+      if (!error) setRazas(data)
+      setLoading(false)
+    }
+
+    loadRazas()
+
+    return () => {
+      isMounted = false
+    }
   }, [idEspecie])
 
   return { razas, loading }

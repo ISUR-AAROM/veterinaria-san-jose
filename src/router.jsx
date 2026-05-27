@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
 
 import { LayoutPublico } from './components/layout/LayoutPublico'
@@ -7,34 +8,46 @@ import { RutaCliente } from './components/layout/RutaCliente'
 import { RutaAdmin } from './components/layout/RutaAdmin'
 import { AdminProvider } from './context/AdminContext'
 
-import { Landing } from './pages/publico/Landing'
-import { Login } from './pages/publico/Login'
-import { Registro } from './pages/publico/Registro'
+const Landing = lazy(() => import('./pages/publico/Landing').then((m) => ({ default: m.Landing })))
+const Login = lazy(() => import('./pages/publico/Login').then((m) => ({ default: m.Login })))
+const Registro = lazy(() => import('./pages/publico/Registro').then((m) => ({ default: m.Registro })))
 
-import { MisMascotas } from './pages/cliente/MisMascotas'
-import { NuevaMascota } from './pages/cliente/NuevaMascota'
-import { MisCitas } from './pages/cliente/MisCitas'
-import { NuevaCita } from './pages/cliente/NuevaCita'
+const MisMascotas = lazy(() => import('./pages/cliente/MisMascotas').then((m) => ({ default: m.MisMascotas })))
+const NuevaMascota = lazy(() => import('./pages/cliente/NuevaMascota').then((m) => ({ default: m.NuevaMascota })))
+const MisCitas = lazy(() => import('./pages/cliente/MisCitas').then((m) => ({ default: m.MisCitas })))
+const NuevaCita = lazy(() => import('./pages/cliente/NuevaCita').then((m) => ({ default: m.NuevaCita })))
 
-import AdminLogin from './pages/admin/Login'
-import { Agenda } from './pages/admin/Agenda'
-import { Clientes } from './pages/admin/Clientes'
-import { DetalleCliente } from './pages/admin/DetalleCliente'
-import { DetalleCita } from './pages/admin/DetalleCita'
-import { HistoriaClinica } from './pages/admin/HistoriaClinica'
-import { Servicios } from './pages/admin/catalogos/Servicios'
-import { Salas } from './pages/admin/catalogos/Salas'
-import { Plantillas } from './pages/admin/catalogos/Plantillas'
-import { Especies } from './pages/admin/catalogos/Especies'
+const AdminLogin = lazy(() => import('./pages/admin/Login'))
+const Agenda = lazy(() => import('./pages/admin/Agenda').then((m) => ({ default: m.Agenda })))
+const Clientes = lazy(() => import('./pages/admin/Clientes').then((m) => ({ default: m.Clientes })))
+const DetalleCliente = lazy(() => import('./pages/admin/DetalleCliente').then((m) => ({ default: m.DetalleCliente })))
+const DetalleCita = lazy(() => import('./pages/admin/DetalleCita').then((m) => ({ default: m.DetalleCita })))
+const HistoriaClinica = lazy(() => import('./pages/admin/HistoriaClinica').then((m) => ({ default: m.HistoriaClinica })))
+const Servicios = lazy(() => import('./pages/admin/catalogos/Servicios').then((m) => ({ default: m.Servicios })))
+const Salas = lazy(() => import('./pages/admin/catalogos/Salas').then((m) => ({ default: m.Salas })))
+const Plantillas = lazy(() => import('./pages/admin/catalogos/Plantillas').then((m) => ({ default: m.Plantillas })))
+const Especies = lazy(() => import('./pages/admin/catalogos/Especies').then((m) => ({ default: m.Especies })))
+
+const loadingFallback = (
+  <div className="min-h-screen flex items-center justify-center text-sm text-[#7A6555]">
+    Cargando...
+  </div>
+)
+
+const withSuspense = (element) => (
+  <Suspense fallback={loadingFallback}>
+    {element}
+  </Suspense>
+)
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <LayoutPublico />,
     children: [
-      { index: true, element: <Landing /> },
-      { path: 'login', element: <Login /> },
-      { path: 'registro', element: <Registro /> },
+      { index: true, element: withSuspense(<Landing />) },
+      { path: 'login', element: withSuspense(<Login />) },
+      { path: 'registro', element: withSuspense(<Registro />) },
     ],
   },
   {
@@ -44,10 +57,10 @@ export const router = createBrowserRouter([
       {
         element: <LayoutCliente />,
         children: [
-          { path: 'mascotas', element: <MisMascotas /> },
-          { path: 'mascotas/nueva', element: <NuevaMascota /> },
-          { path: 'citas', element: <MisCitas /> },
-          { path: 'citas/nueva', element: <NuevaCita /> },
+            { path: 'mascotas', element: withSuspense(<MisMascotas />) },
+            { path: 'mascotas/nueva', element: withSuspense(<NuevaMascota />) },
+            { path: 'citas', element: withSuspense(<MisCitas />) },
+            { path: 'citas/nueva', element: withSuspense(<NuevaCita />) },
         ],
       },
     ],
@@ -56,7 +69,7 @@ export const router = createBrowserRouter([
     path: '/admin',
     element: <AdminProvider><Outlet /></AdminProvider>,
     children: [
-      { path: 'login', element: <AdminLogin /> },
+      { path: 'login', element: withSuspense(<AdminLogin />) },
       {
         element: <RutaAdmin />,
         children: [
@@ -64,15 +77,15 @@ export const router = createBrowserRouter([
             element: <LayoutAdmin />,
             children: [
               { index: true, element: <Navigate to="agenda" replace /> },
-              { path: 'agenda', element: <Agenda /> },
-              { path: 'clientes', element: <Clientes /> },
-              { path: 'clientes/:id', element: <DetalleCliente /> },
-              { path: 'citas/:id', element: <DetalleCita /> },
-              { path: 'historia/:idMascota', element: <HistoriaClinica /> },
-              { path: 'catalogos/servicios', element: <Servicios /> },
-              { path: 'catalogos/salas', element: <Salas /> },
-              { path: 'catalogos/plantillas', element: <Plantillas /> },
-              { path: 'catalogos/especies', element: <Especies /> },
+              { path: 'agenda', element: withSuspense(<Agenda />) },
+              { path: 'clientes', element: withSuspense(<Clientes />) },
+              { path: 'clientes/:id', element: withSuspense(<DetalleCliente />) },
+              { path: 'citas/:id', element: withSuspense(<DetalleCita />) },
+              { path: 'historia/:idMascota', element: withSuspense(<HistoriaClinica />) },
+              { path: 'catalogos/servicios', element: withSuspense(<Servicios />) },
+              { path: 'catalogos/salas', element: withSuspense(<Salas />) },
+              { path: 'catalogos/plantillas', element: withSuspense(<Plantillas />) },
+              { path: 'catalogos/especies', element: withSuspense(<Especies />) },
             ],
           },
         ],

@@ -13,6 +13,8 @@ Sistema web para la gestion de citas, mascotas, historia clinica y pagos de una 
 - Landing page con secciones de servicios, nosotros y contacto.
 - Flujos de login y registro (clientes) con stepper.
 - Acceso de personal con validacion en tabla `personal`.
+- Registro atomico via RPC `register_cliente()` (cliente + mascota + historia clinica).
+- Staff bloqueado en login de clientes, redirige a `/admin/login`.
 - Paneles base para cliente y admin con navegacion.
 - Catalogos y datos de referencia listos para integracion con Supabase.
 

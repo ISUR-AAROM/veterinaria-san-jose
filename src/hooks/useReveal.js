@@ -1,27 +1,25 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export function useReveal(animation = 'animate-fade-in-up') {
+  const [isVisible, setIsVisible] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    el.style.opacity = '0'
+    if (!ref.current) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.classList.add(animation)
-          observer.unobserve(el)
+          setIsVisible(true)
+          observer.unobserve(ref.current)
         }
       },
       { threshold: 0.15 }
     )
 
-    observer.observe(el)
+    observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [animation])
+  }, [])
 
-  return ref
+  return { ref, isVisible }
 }

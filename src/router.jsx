@@ -6,6 +6,7 @@ import { LayoutCliente } from './components/layout/LayoutCliente'
 import { LayoutAdmin } from './components/layout/LayoutAdmin'
 import { RutaCliente } from './components/layout/RutaCliente'
 import { RutaAdmin } from './components/layout/RutaAdmin'
+import { RutaRol } from './components/layout/RutaRol'
 import { AdminProvider } from './context/AdminContext'
 
 const Landing = lazy(() => import('./pages/publico/Landing').then((m) => ({ default: m.Landing })))
@@ -82,10 +83,15 @@ export const router = createBrowserRouter([
               { path: 'clientes/:id', element: withSuspense(<DetalleCliente />) },
               { path: 'citas/:id', element: withSuspense(<DetalleCita />) },
               { path: 'historia/:idMascota', element: withSuspense(<HistoriaClinica />) },
-              { path: 'catalogos/servicios', element: withSuspense(<Servicios />) },
-              { path: 'catalogos/salas', element: withSuspense(<Salas />) },
-              { path: 'catalogos/plantillas', element: withSuspense(<Plantillas />) },
-              { path: 'catalogos/especies', element: withSuspense(<Especies />) },
+              {
+                element: <RutaRol accion="catalogos" />,
+                children: [
+                  { path: 'catalogos/servicios', element: withSuspense(<Servicios />) },
+                  { path: 'catalogos/salas', element: withSuspense(<Salas />) },
+                  { path: 'catalogos/plantillas', element: withSuspense(<Plantillas />) },
+                  { path: 'catalogos/especies', element: withSuspense(<Especies />) },
+                ],
+              },
             ],
           },
         ],

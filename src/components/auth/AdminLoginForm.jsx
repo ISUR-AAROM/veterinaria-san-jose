@@ -13,34 +13,39 @@ export function AdminLoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const ref = useReveal('animate-fade-in-up')
+  const { ref, isVisible } = useReveal()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    if (authError) {
-      setError(authError.message)
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      if (authError) {
+        setError(authError.message)
+        setTimeout(() => setError(''), 8000)
+        return
+      }
+
+      const { data: personal, error: personalError } = await supabase
+        .from('personal')
+        .select('id, rol, nombre')
+        .eq('id_cuenta', authData.user.id)
+        .single()
+
+      if (personalError || !personal) {
+        await supabase.auth.signOut()
+        setError('No tienes acceso como personal')
+        setTimeout(() => setError(''), 8000)
+        return
+      }
+
+      await setSessionPersonal(authData.user.id)
+      navigate('/admin/agenda')
+    } catch {
+      setError('Error inesperado. Intenta de nuevo.')
       setTimeout(() => setError(''), 8000)
-      return
     }
-
-    const { data: personal, error: personalError } = await supabase
-      .from('personal')
-      .select('id, rol, nombre')
-      .eq('id_cuenta', authData.user.id)
-      .single()
-
-    if (personalError || !personal) {
-      await supabase.auth.signOut()
-      setError('No tienes acceso como personal')
-      setTimeout(() => setError(''), 8000)
-      return
-    }
-
-    await setSessionPersonal(authData.user.id)
-    navigate('/admin/agenda')
   }
 
   return (
@@ -48,7 +53,7 @@ export function AdminLoginForm() {
       <div className="absolute top-10 left-1/3 w-72 h-72 rounded-full bg-[#4A7C59]/[0.04] blur-3xl" />
       <div className="absolute bottom-10 right-1/3 w-80 h-80 rounded-full bg-[#C2570F]/[0.04] blur-3xl" />
 
-      <div ref={ref} className="w-full max-w-sm">
+      <div ref={ref} className={`w-full max-w-sm transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-8">
             <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -84,7 +89,7 @@ export function AdminLoginForm() {
               <p className="text-xs text-[#B91C1C] text-center bg-[#B91C1C]/5 py-2 px-3 rounded-lg">{error}</p>
             )}
             <Button type="submit" className="w-full py-2.5">
-              Iniciar sesion
+              Iniciar sesión
             </Button>
           </form>
 

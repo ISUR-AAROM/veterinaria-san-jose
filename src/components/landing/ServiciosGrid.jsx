@@ -7,7 +7,6 @@ export function ServiciosGrid() {
   const items = useMemo(() => servicios.map((s, i) => ({
     ...s,
     animationDelay: `${100 + i * 100}ms`,
-    index: i,
   })), [servicios])
 
   return (
@@ -36,7 +35,6 @@ export function ServiciosGrid() {
                   descripcion={item.descripcion}
                   precio={item.precio}
                   duracionMinutos={item.duracion_minutos}
-                  index={item.index}
                 />
               </div>
             ))}

@@ -6,12 +6,24 @@ const styles = {
   CANCELADA: 'bg-red-50 text-red-700',
 }
 
-export function Badge({ estado }) {
+export function Badge({ estado, activo, children }) {
+  if (activo !== undefined) {
+    return (
+      <span
+        className={`text-xs font-medium px-2.5 py-0.5 rounded-full inline-block ${
+          activo ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {activo ? 'Activo' : 'Inactivo'}
+      </span>
+    )
+  }
+
   return (
     <span
-      className={`text-xs font-medium px-2 py-1 rounded-full ${styles[estado] || 'bg-gray-50 text-gray-600'}`}
+      className={`text-xs font-medium px-2.5 py-0.5 rounded-full inline-block ${styles[estado] || 'bg-gray-50 text-gray-600'}`}
     >
-      {estado?.replace(/_/g, ' ')}
+      {children || estado?.replace(/_/g, ' ')}
     </span>
   )
 }

@@ -1,8 +1,58 @@
+import { useState } from 'react'
 import { useReveal } from '../../hooks/useReveal'
 import { IconMapPin, IconPhone, IconMail } from '../ui/icons'
 
+const INITIAL = { nombre: '', email: '', mensaje: '' }
+
+function validar(form) {
+  const e = {}
+  if (!form.nombre.trim()) e.nombre = 'El nombre es obligatorio'
+  if (!form.email.trim()) {
+    e.email = 'El email es obligatorio'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    e.email = 'Email inválido'
+  }
+  if (!form.mensaje.trim()) {
+    e.mensaje = 'El mensaje no puede estar vacío'
+  } else if (form.mensaje.trim().length < 10) {
+    e.mensaje = 'El mensaje debe tener al menos 10 caracteres'
+  }
+  return e
+}
+
 export function ContactoSection() {
-  const refForm = useReveal('animate-fade-in-up')
+  const [form, setForm] = useState(INITIAL)
+  const [errors, setErrors] = useState({})
+  const [status, setStatus] = useState('idle')
+
+  const { ref: refForm, isVisible: visForm } = useReveal()
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const v = validar(form)
+    setErrors(v)
+    if (Object.keys(v).length) return
+
+    setStatus('sending')
+    try {
+      const response = await fetch('https://formspree.io/f/xyzdlqjg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!response.ok) throw new Error('Error al enviar')
+      setStatus('success')
+      setForm(INITIAL)
+    } catch {
+      setStatus('error')
+    }
+  }
 
   return (
     <section id="contacto" className="py-24 relative overflow-hidden">
@@ -17,77 +67,98 @@ export function ContactoSection() {
           <h2 className="text-3xl md:text-4xl font-bold text-[#2C1A0E]">Contactanos</h2>
         </div>
 
-        <div ref={refForm} className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8 md:p-10">
-          <div className="grid md:grid-cols-2 gap-10">
-            <div className="space-y-6">
-              <h3 className="font-bold text-[#2C1A0E] text-lg">Informacion de contacto</h3>
+        <div ref={refForm} className={`max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8 md:p-10 transition-all duration-700 ${visForm ? 'animate-fade-in-up' : 'opacity-0'}`}>
+          <form onSubmit={handleSubmit}>
+            <div className="grid md:grid-cols-2 gap-10">
+              <div className="space-y-6">
+                <h3 className="font-bold text-[#2C1A0E] text-lg">Informacion de contacto</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#C2570F] mt-0.5 shrink-0"><IconMapPin className="w-5 h-5" /></span>
+                    <div>
+                      <p className="text-sm font-medium text-[#2C1A0E]">Direccion</p>
+                      <p className="text-sm text-[#7A6555]">Av. Principal 123, San Miguel</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#C2570F] mt-0.5 shrink-0"><IconPhone className="w-5 h-5" /></span>
+                    <div>
+                      <p className="text-sm font-medium text-[#2C1A0E]">Telefono</p>
+                      <p className="text-sm text-[#7A6555]">(01) 555 1234</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-[#C2570F] mt-0.5 shrink-0"><IconMail className="w-5 h-5" /></span>
+                    <div>
+                      <p className="text-sm font-medium text-[#2C1A0E]">Email</p>
+                      <p className="text-sm text-[#7A6555]">contacto@veterinaria-san-jose.pe</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-[#E8DDD0] pt-6">
+                  <p className="text-xs text-[#7A6555] leading-relaxed">
+                    Horario de atencion:
+                    <br />
+                    Lun - Vie: 9:00 am - 7:00 pm
+                    <br />
+                    Sab: 9:00 am - 1:00 pm
+                  </p>
+                </div>
+              </div>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#C2570F] mt-0.5 shrink-0"><IconMapPin className="w-5 h-5" /></span>
-                  <div>
-                    <p className="text-sm font-medium text-[#2C1A0E]">Direccion</p>
-                    <p className="text-sm text-[#7A6555]">Av. Principal 123, San Miguel</p>
-                  </div>
+                <h3 className="font-bold text-[#2C1A0E] text-lg">Envia un mensaje</h3>
+                <div>
+                  <label className="text-xs text-[#7A6555] font-medium block mb-1">Nombre</label>
+                  <input
+                    name="nombre"
+                    type="text"
+                    placeholder="Tu nombre"
+                    value={form.nombre}
+                    onChange={handleChange}
+                    className={`w-full border rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555] ${errors.nombre ? 'border-[#B91C1C]' : 'border-[#E8DDD0]'}`}
+                  />
+                  {errors.nombre && <p className="text-xs text-[#B91C1C] mt-1">{errors.nombre}</p>}
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-[#C2570F] mt-0.5 shrink-0"><IconPhone className="w-5 h-5" /></span>
-                  <div>
-                    <p className="text-sm font-medium text-[#2C1A0E]">Telefono</p>
-                    <p className="text-sm text-[#7A6555]">(01) 555 1234</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-[#7A6555] font-medium block mb-1">Email</label>
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    value={form.email}
+                    onChange={handleChange}
+                    className={`w-full border rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555] ${errors.email ? 'border-[#B91C1C]' : 'border-[#E8DDD0]'}`}
+                  />
+                  {errors.email && <p className="text-xs text-[#B91C1C] mt-1">{errors.email}</p>}
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-[#C2570F] mt-0.5 shrink-0"><IconMail className="w-5 h-5" /></span>
-                  <div>
-                    <p className="text-sm font-medium text-[#2C1A0E]">Email</p>
-                    <p className="text-sm text-[#7A6555]">contacto@veterinaria-san-jose.pe</p>
-                  </div>
+                <div>
+                  <label className="text-xs text-[#7A6555] font-medium block mb-1">Mensaje</label>
+                  <textarea
+                    name="mensaje"
+                    rows="3"
+                    placeholder="Escribe tu mensaje..."
+                    value={form.mensaje}
+                    onChange={handleChange}
+                    className={`w-full border rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555] resize-none ${errors.mensaje ? 'border-[#B91C1C]' : 'border-[#E8DDD0]'}`}
+                  />
+                  {errors.mensaje && <p className="text-xs text-[#B91C1C] mt-1">{errors.mensaje}</p>}
                 </div>
-              </div>
-              <div className="border-t border-[#E8DDD0] pt-6">
-                <p className="text-xs text-[#7A6555] leading-relaxed">
-                  Horario de atencion:
-                  <br />
-                  Lun - Vie: 9:00 am - 7:00 pm
-                  <br />
-                  Sab: 9:00 am - 1:00 pm
-                </p>
+                <button
+                  type="submit"
+                  disabled={status === 'sending'}
+                  className="bg-[#C2570F] text-white font-medium text-sm px-5 py-2.5 rounded-lg hover:bg-[#A8480C] transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {status === 'sending' ? 'Enviando...' : status === 'success' ? 'Enviado!' : 'Enviar mensaje'}
+                </button>
+                {status === 'success' && (
+                  <p className="text-xs text-[#4A7C59] text-center bg-[#4A7C59]/5 py-2 px-3 rounded-lg">Mensaje enviado correctamente</p>
+                )}
+                {status === 'error' && (
+                  <p className="text-xs text-[#B91C1C] text-center bg-[#B91C1C]/5 py-2 px-3 rounded-lg">Error al enviar. Intenta de nuevo.</p>
+                )}
               </div>
             </div>
-            <div className="space-y-4">
-              <h3 className="font-bold text-[#2C1A0E] text-lg">Envia un mensaje</h3>
-              <div>
-                <label className="text-xs text-[#7A6555] font-medium block mb-1">Nombre</label>
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  className="w-full border border-[#E8DDD0] rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555]"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[#7A6555] font-medium block mb-1">Email</label>
-                <input
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  className="w-full border border-[#E8DDD0] rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555]"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[#7A6555] font-medium block mb-1">Mensaje</label>
-                <textarea
-                  rows="3"
-                  placeholder="Escribe tu mensaje..."
-                  className="w-full border border-[#E8DDD0] rounded-lg px-4 py-2.5 text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F]/30 focus:border-[#C2570F] transition-all placeholder:text-[#7A6555] resize-none"
-                />
-              </div>
-              <button
-                type="button"
-                className="bg-[#C2570F] text-white font-medium text-sm px-5 py-2.5 rounded-lg hover:bg-[#A8480C] transition-colors w-full"
-              >
-                Enviar mensaje
-              </button>
-            </div>
-          </div>
+          </form>
         </div>
       </div>
     </section>

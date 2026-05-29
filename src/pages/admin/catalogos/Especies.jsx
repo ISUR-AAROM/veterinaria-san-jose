@@ -1,22 +1,219 @@
-export function Especies() {
+import { useState, Fragment } from 'react'
+import { CatalogoLayout } from '../../../components/catalogos/CatalogoLayout'
+import { CatalogoModal } from '../../../components/catalogos/CatalogoModal'
+import { ToggleActivoBtn } from '../../../components/catalogos/ToggleActivoBtn'
+import { Badge } from '../../../components/ui/Badge'
+import { Input } from '../../../components/ui/Input'
+import { useEspeciesAll } from '../../../hooks/useEspeciesAll'
+import { useRazasAdmin } from '../../../hooks/useRazasAdmin'
+
+function EditBtn({ onClick }) {
   return (
-    <div className="animate-fade-in-up">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#2C1A0E]">Catalogos - Especies</h1>
-        <p className="text-sm text-[#7A6555] mt-1">Administracion de especies y razas</p>
+    <button
+      onClick={onClick}
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#C2570F] transition-colors"
+      title="Editar"
+    >
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M11.5 1.5L13.5 3.5L5 12L2 13L3 10L11.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+        <path d="M9 3L12 6" stroke="currentColor" strokeWidth="1.3"/>
+      </svg>
+    </button>
+  )
+}
+
+export function Especies() {
+  const { especies, agregar, actualizar, toggleActivo } = useEspeciesAll()
+  const [expandida, setExpandida] = useState(null)
+  const { razas, loading: loadingRazas, agregarRaza, toggleRaza } = useRazasAdmin(expandida)
+
+  const [modal, setModal] = useState({ open: false, editando: null })
+  const [form, setForm] = useState({ nombre: '' })
+  const [errors, setErrors] = useState({})
+  const [saving, setSaving] = useState(false)
+
+  const [modalRaza, setModalRaza] = useState(false)
+  const [razaNombre, setRazaNombre] = useState('')
+  const [razaError, setRazaError] = useState('')
+  const [savingRaza, setSavingRaza] = useState(false)
+
+  const abrirCrear = () => {
+    setForm({ nombre: '' })
+    setErrors({})
+    setModal({ open: true, editando: null })
+  }
+
+  const abrirEditar = (e) => {
+    setForm({ nombre: e.nombre })
+    setErrors({})
+    setModal({ open: true, editando: e })
+  }
+
+  const guardar = async () => {
+    if (!form.nombre.trim()) {
+      setErrors({ nombre: 'Requerido' })
+      return
+    }
+    setSaving(true)
+    try {
+      if (modal.editando) {
+        await actualizar(modal.editando.id, form)
+      } else {
+        await agregar(form)
+      }
+      setModal({ open: false, editando: null })
+    } catch { /* error propagado */ }
+    setSaving(false)
+  }
+
+  const toggleExpandir = (id) => {
+    setExpandida((prev) => (prev === id ? null : id))
+  }
+
+  const abrirModalRaza = () => {
+    setRazaNombre('')
+    setRazaError('')
+    setModalRaza(true)
+  }
+
+  const guardarRaza = async () => {
+    if (!razaNombre.trim()) {
+      setRazaError('Requerido')
+      return
+    }
+    setSavingRaza(true)
+    try {
+      await agregarRaza(razaNombre)
+      setModalRaza(false)
+    } catch { /* error propagado */ }
+    setSavingRaza(false)
+  }
+
+  return (
+    <CatalogoLayout titulo="Especies y razas" descripcion="Administración de especies y sus razas asociadas" onAgregar={abrirCrear} total={especies.length}>
+      <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-[#FAF7F2]">
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Nombre</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Estado</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {especies.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-5 py-8 text-center text-sm text-[#7A6555]">
+                  Sin registros
+                </td>
+              </tr>
+            ) : especies.map((e) => (
+              <Fragment key={e.id}>
+                <tr className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
+                  <td className="px-5 py-3.5">
+                    <span className="text-sm font-medium text-[#2C1A0E]">{e.nombre}</span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <Badge activo={e.is_active} />
+                      <ToggleActivoBtn activo={e.is_active} onToggle={() => toggleActivo(e.id)} nombre={e.nombre} />
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-1">
+                      <EditBtn onClick={() => abrirEditar(e)} />
+                      <button
+                        onClick={() => toggleExpandir(e.id)}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                          expandida === e.id
+                            ? 'bg-[#FAF7F2] text-[#7A6555]'
+                            : 'text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#4A7C59]'
+                        }`}
+                        title={expandida === e.id ? 'Ocultar razas' : 'Ver razas'}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M7.5 3C4.5 3 2 7.5 2 7.5C2 7.5 4.5 12 7.5 12C10.5 12 13 7.5 13 7.5C13 7.5 10.5 3 7.5 3Z" stroke="currentColor" strokeWidth="1.3"/>
+                          <circle cx="7.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.3"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {expandida === e.id && (
+                  <tr className="animate-slide-up">
+                    <td colSpan={3} className="px-0 py-0 bg-[#FAF7F2]">
+                      <div className="mx-5 mb-4 mt-2 overflow-hidden rounded-lg border border-[#E8DDD0] bg-white">
+                        <div className="flex items-center justify-between border-b border-[#E8DDD0] px-4 py-2.5">
+                          <span className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide">Razas de {e.nombre}</span>
+                          <button
+                            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[#C2570F] hover:bg-[#FFF3EB] transition-colors"
+                            onClick={abrirModalRaza}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            Agregar
+                          </button>
+                        </div>
+                        {loadingRazas ? (
+                          <p className="px-4 py-6 text-sm text-[#7A6555]">Cargando...</p>
+                        ) : razas.length === 0 ? (
+                          <p className="px-4 py-6 text-sm text-[#7A6555]">Sin razas registradas</p>
+                        ) : (
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b border-[#E8DDD0] bg-[#FAF7F2]">
+                                <th className="text-xs font-semibold text-[#7A6555] px-4 py-2.5 text-left">Nombre</th>
+                                <th className="text-xs font-semibold text-[#7A6555] px-4 py-2.5 text-left">Estado</th>
+                                <th className="text-xs font-semibold text-[#7A6555] px-4 py-2.5 text-left"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {razas.map((r) => (
+                                <tr key={r.id} className="border-b border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
+                                  <td className="px-4 py-2.5 text-sm text-[#2C1A0E]">{r.nombre}</td>
+                                  <td className="px-4 py-2.5">
+                                    <div className="flex items-center gap-2">
+                                      <Badge activo={r.is_active} />
+                                      <ToggleActivoBtn activo={r.is_active} onToggle={() => toggleRaza(r.id)} nombre={r.nombre} />
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-2.5"></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="bg-white rounded-2xl border border-[#E8DDD0] p-14 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mb-5">
-          <svg className="w-8 h-8 text-[#C2570F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="14" r="4.5" />
-            <path d="M5 8C5 8 7 4 12 4C17 4 19 8 19 8" strokeLinecap="round" />
-            <circle cx="7.5" cy="7.5" r="1.2" />
-            <circle cx="16.5" cy="7.5" r="1.2" />
-          </svg>
-        </div>
-        <h2 className="text-lg font-semibold text-[#2C1A0E] mb-1">Proximamente</h2>
-        <p className="text-sm text-[#7A6555] max-w-xs">La gestion de especies y razas estara disponible en la proxima actualizacion.</p>
-      </div>
-    </div>
+
+      <CatalogoModal
+        open={modal.open}
+        onClose={() => setModal({ open: false, editando: null })}
+        titulo={modal.editando ? 'Editar especie' : 'Nueva especie'}
+        onGuardar={guardar}
+        cargando={saving}
+      >
+        <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} error={errors.nombre} placeholder="Ej: Canino" />
+      </CatalogoModal>
+
+      <CatalogoModal
+        open={modalRaza}
+        onClose={() => setModalRaza(false)}
+        titulo="Agregar raza"
+        onGuardar={guardarRaza}
+        cargando={savingRaza}
+        botonTexto="Agregar"
+      >
+        <Input label="Nombre" value={razaNombre} onChange={(e) => setRazaNombre(e.target.value)} error={razaError} placeholder="Ej: Labrador Retriever" />
+      </CatalogoModal>
+    </CatalogoLayout>
   )
 }

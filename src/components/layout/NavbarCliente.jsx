@@ -48,7 +48,7 @@ export function NavbarCliente() {
             onClick={handleLogout}
             className="text-sm text-[#7A6555] hover:text-[#C2570F] transition-colors px-3 py-2"
           >
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </div>

@@ -23,7 +23,7 @@ export function useTipoDocumento() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps — solo al montar
 
   return { tipos, loading }
 }

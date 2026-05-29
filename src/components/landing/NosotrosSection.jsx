@@ -1,14 +1,14 @@
 import { useReveal } from '../../hooks/useReveal'
 
 export function NosotrosSection() {
-  const refContent = useReveal('animate-fade-in-left')
-  const refVisual = useReveal('animate-fade-in-right')
+  const { ref: refContent, isVisible: visContent } = useReveal()
+  const { ref: refVisual, isVisible: visVisual } = useReveal()
 
   return (
     <section id="nosotros" className="bg-white py-24">
       <div className="max-w-5xl mx-auto px-8">
         <div className="flex flex-col md:flex-row items-center gap-16">
-          <div ref={refContent} className="flex-1">
+          <div ref={refContent} className={`flex-1 transition-all duration-700 ${visContent ? 'animate-fade-in-left' : 'opacity-0'}`}>
             <span className="text-[#C2570F] text-xs font-semibold tracking-[0.2em] uppercase mb-3 block">
               Quienes somos
             </span>
@@ -37,7 +37,7 @@ export function NosotrosSection() {
               </div>
             </div>
           </div>
-          <div ref={refVisual} className="flex-1 w-full">
+          <div ref={refVisual} className={`flex-1 w-full transition-all duration-700 ${visVisual ? 'animate-fade-in-right' : 'opacity-0'}`}>
             <div className="relative">
               <div className="bg-gradient-to-br from-[#FAF7F2] to-[#FFF3EB] border border-[#E8DDD0] rounded-2xl h-72 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.04]">

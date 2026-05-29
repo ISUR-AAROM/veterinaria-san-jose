@@ -1,4 +1,4 @@
-export function Table({ headers, rows, renderRow }) {
+export function Table({ headers, rows, renderRow, rowKey = 'id' }) {
   return (
     <div className="w-full border border-[#E8DDD0] rounded-lg overflow-hidden">
       <table className="w-full">
@@ -25,9 +25,9 @@ export function Table({ headers, rows, renderRow }) {
               </td>
             </tr>
           ) : (
-            rows.map((row, i) => (
+            rows.map((row) => (
               <tr
-                key={i}
+                key={row[rowKey]}
                 className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors"
               >
                 {renderRow(row)}

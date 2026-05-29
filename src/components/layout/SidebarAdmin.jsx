@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAdmin } from '../../context/AdminContext'
+import { usePermisos } from '../../hooks/usePermisos'
 
 function IconAgenda({ className, stroke }) {
   return (
@@ -66,43 +67,51 @@ export function SidebarAdmin() {
   const location = useLocation()
   const navigate = useNavigate()
   const { personal, clearPersonal } = useAdmin()
-  const navItems = useMemo(() => ([
-    {
-      label: 'Agenda',
-      path: '/admin/agenda',
-      icon: (active) => <IconAgenda className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-    },
-    {
-      label: 'Clientes',
-      path: '/admin/clientes',
-      icon: (active) => <IconClientes className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-    },
-    {
-      label: 'Catalogos',
-      children: [
-        {
-          label: 'Servicios',
-          path: '/admin/catalogos/servicios',
-          icon: (active) => <IconServicios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-        },
-        {
-          label: 'Salas',
-          path: '/admin/catalogos/salas',
-          icon: (active) => <IconSalas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-        },
-        {
-          label: 'Plantillas',
-          path: '/admin/catalogos/plantillas',
-          icon: (active) => <IconPlantillas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-        },
-        {
-          label: 'Especies',
-          path: '/admin/catalogos/especies',
-          icon: (active) => <IconEspecies className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-        },
-      ],
-    },
-  ]), [])
+  const { can } = usePermisos()
+  const navItems = useMemo(() => {
+    const items = [
+      {
+        label: 'Agenda',
+        path: '/admin/agenda',
+        icon: (active) => <IconAgenda className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+      },
+      {
+        label: 'Clientes',
+        path: '/admin/clientes',
+        icon: (active) => <IconClientes className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+      },
+    ]
+
+    if (can('catalogos')) {
+      items.push({
+        label: 'Catalogos',
+        children: [
+          {
+            label: 'Servicios',
+            path: '/admin/catalogos/servicios',
+            icon: (active) => <IconServicios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+          },
+          {
+            label: 'Salas',
+            path: '/admin/catalogos/salas',
+            icon: (active) => <IconSalas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+          },
+          {
+            label: 'Plantillas',
+            path: '/admin/catalogos/plantillas',
+            icon: (active) => <IconPlantillas className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+          },
+          {
+            label: 'Especies',
+            path: '/admin/catalogos/especies',
+            icon: (active) => <IconEspecies className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+          },
+        ],
+      })
+    }
+
+    return items
+  }, [can])
 
   const handleLogout = useCallback(async () => {
     await supabase.auth.signOut()

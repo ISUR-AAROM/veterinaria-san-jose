@@ -53,7 +53,7 @@ export function RegistroForm() {
   const [errors, setErrors] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
 
-  const ref = useReveal('animate-fade-in-up')
+  const { ref, isVisible } = useReveal()
 
   const handleSiguiente = (e) => {
     e.preventDefault()
@@ -69,42 +69,48 @@ export function RegistroForm() {
     if (Object.keys(e2).length > 0) return
 
     setErrorGeneral('')
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: cliente.email,
-      password: cliente.password,
-    })
-    if (authError) {
-      setErrorGeneral(authError.message)
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: cliente.email,
+        password: cliente.password,
+      })
+      if (authError) {
+        setErrorGeneral(authError.message)
+        setTimeout(() => setErrorGeneral(''), 8000)
+        return
+      }
+
+      if (!authData.session) {
+        setErrorGeneral('Debes confirmar tu email para continuar')
+        setTimeout(() => setErrorGeneral(''), 8000)
+        return
+      }
+
+      const idCuenta = authData.user.id
+
+      const { error: registroError } = await supabase.rpc('register_cliente', {
+        p_id_tipo_documento: cliente.id_tipo_documento,
+        p_numero_documento: cliente.numero_documento,
+        p_nombre: cliente.nombre,
+        p_apellido: cliente.apellido,
+        p_telefono: cliente.telefono,
+        p_mascota_nombre: mascota.nombre,
+        p_id_especie: mascota.id_especie,
+        p_id_raza: mascota.id_raza || null,
+        p_fecha_nacimiento: mascota.fecha_nacimiento,
+      })
+
+      if (registroError) {
+        setErrorGeneral('Error al completar el registro')
+        return
+      }
+
+      navigate('/cliente/mascotas')
+    } catch {
+      setErrorGeneral('Error inesperado. Intenta de nuevo.')
       setTimeout(() => setErrorGeneral(''), 8000)
-      return
     }
-
-    if (!authData.session) {
-      setErrorGeneral('Debes confirmar tu email para continuar')
-      setTimeout(() => setErrorGeneral(''), 8000)
-      return
-    }
-
-    const idCuenta = authData.user.id
-
-    const { error: registroError } = await supabase.rpc('register_cliente', {
-      p_id_tipo_documento: cliente.id_tipo_documento,
-      p_numero_documento: cliente.numero_documento,
-      p_nombre: cliente.nombre,
-      p_apellido: cliente.apellido,
-      p_telefono: cliente.telefono,
-      p_mascota_nombre: mascota.nombre,
-      p_id_especie: mascota.id_especie,
-      p_id_raza: mascota.id_raza || null,
-      p_fecha_nacimiento: mascota.fecha_nacimiento,
-    })
-
-    if (registroError) {
-      setErrorGeneral('Error al completar el registro')
-      return
-    }
-
-    navigate('/cliente/mascotas')
   }
 
   return (
@@ -112,7 +118,7 @@ export function RegistroForm() {
       <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full bg-[#C2570F]/[0.04] blur-3xl" />
       <div className="absolute bottom-10 right-1/4 w-80 h-80 rounded-full bg-[#4A7C59]/[0.04] blur-3xl" />
 
-      <div ref={ref} className="w-full max-w-lg">
+      <div ref={ref} className={`w-full max-w-lg transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-6">
             <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">

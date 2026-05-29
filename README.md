@@ -8,16 +8,6 @@ Sistema web para la gestion de citas, mascotas, historia clinica y pagos de una 
 - **Backend:** Supabase (Auth, PostgreSQL, Realtime)
 - **Diseno:** Inter (Google Fonts), paleta personalizada (naranja tierra, verde salvia, blanco calido)
 
-## Alcance Fase 1
-
-- Landing page con secciones de servicios, nosotros y contacto.
-- Flujos de login y registro (clientes) con stepper.
-- Acceso de personal con validacion en tabla `personal`.
-- Registro atomico via RPC `register_cliente()` (cliente + mascota + historia clinica).
-- Staff bloqueado en login de clientes, redirige a `/admin/login`.
-- Paneles base para cliente y admin con navegacion.
-- Catalogos y datos de referencia listos para integracion con Supabase.
-
 ## Estructura de rutas
 
 | Ruta | Descripcion |
@@ -56,15 +46,3 @@ VITE_SUPABASE_ANON_KEY=...
 | Veterinario | veterinario1@sanjose.pe | veterinario123 | /admin/login |
 | Asistente | asistente1@sanjose.pe | asistente123 | /admin/login |
 | Cliente | client1@sanjose.pe | password123 | /login |
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm run preview
-```
-
-## Proyecto
-
-Desarrollado para la Clinica Veterinaria San Jose.

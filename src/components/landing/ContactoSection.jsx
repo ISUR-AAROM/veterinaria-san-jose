@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useReveal } from '../../hooks/useReveal'
 import { IconMapPin, IconPhone, IconMail } from '../ui/icons'
+import contactSrc from '../../assets/contact.png'
 
 const INITIAL = { nombre: '', email: '', mensaje: '' }
 
@@ -55,9 +56,25 @@ export function ContactoSection() {
   }
 
   return (
-    <section id="contacto" className="py-24 relative overflow-hidden">
+    <section id="contacto" className="py-24 relative overflow-hidden bg-[#FAF7F2]">
+      <div className="absolute inset-0">
+        <img
+          src={contactSrc}
+          alt=""
+          className="w-full h-full object-cover opacity-15"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF7F2]/80 via-[#FAF7F2]/40 to-[#FAF7F2]/60 mix-blend-multiply" />
+      </div>
+
       <div className="absolute bottom-0 right-0 w-[30rem] h-[30rem] rounded-full bg-[#4A7C59]/[0.03] blur-3xl" />
       <div className="absolute top-0 left-0 w-[25rem] h-[25rem] rounded-full bg-[#C2570F]/[0.03] blur-3xl" />
+
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundSize: '256px 256px',
+        }}
+      />
 
       <div className="max-w-5xl mx-auto px-8 relative z-10">
         <div className="text-center mb-12">

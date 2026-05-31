@@ -1,15 +1,13 @@
+import logoSrc from '../../assets/logo.png'
+
 export function Footer() {
   return (
     <footer className="bg-[#2C1A0E] text-[#E8DDD0] text-sm py-10">
       <div className="max-w-5xl mx-auto px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <div className="flex items-center gap-2 text-white font-bold text-base mb-3">
-              <svg className="w-5 h-5 text-[#C2570F]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="10" cy="10" r="8" />
-                <path d="M10 6V14M6 10H14" />
-              </svg>
-              San Jose
+            <div className="mb-3">
+              <img src={logoSrc} alt="San Jose" className="h-14 w-auto brightness-0 invert opacity-90" />
             </div>
             <p className="text-[#7A6555] text-xs leading-relaxed">
               Clinica veterinaria de confianza para el cuidado de tu mascota.

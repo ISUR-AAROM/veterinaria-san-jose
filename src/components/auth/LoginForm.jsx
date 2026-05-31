@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { useReveal } from '../../hooks/useReveal'
+import logoSrc from '../../assets/logo.png'
 
 export function LoginForm() {
   const navigate = useNavigate()
@@ -52,14 +53,9 @@ export function LoginForm() {
       <div ref={ref} className={`w-full max-w-sm transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-[#C2570F]" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="14" cy="14" r="12" stroke="currentColor" strokeWidth="1.8" />
-                <path d="M14 8V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                <path d="M8 14H20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+            <div className="flex justify-center mb-4">
+              <img src={logoSrc} alt="San Jose" className="h-20 w-auto" />
             </div>
-            <h1 className="text-xl font-bold text-[#2C1A0E]">San Jose</h1>
             <p className="text-sm text-[#7A6555] mt-1">Inicia sesion en tu cuenta</p>
           </div>
 

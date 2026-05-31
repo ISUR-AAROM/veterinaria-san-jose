@@ -6,7 +6,7 @@ export function LayoutPublico() {
   return (
     <div className="min-h-screen flex flex-col">
       <NavbarPublico />
-      <main className="flex-1 pt-14">
+      <main className="flex-1 pt-16">
         <Outlet />
       </main>
       <Footer />

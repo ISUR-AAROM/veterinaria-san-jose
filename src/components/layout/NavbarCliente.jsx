@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import logoSrc from '../../assets/logo.png'
 
 const navItems = [
   { label: 'Mis mascotas', path: '/cliente/mascotas' },
@@ -18,13 +19,9 @@ export function NavbarCliente() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white border-b border-[#E8DDD0] z-40">
-      <div className="max-w-5xl mx-auto px-8 h-14 flex items-center justify-between">
-        <Link to="/cliente/mascotas" className="flex items-center gap-2 text-[#C2570F] font-bold text-lg">
-          <svg className="w-5 h-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="10" cy="10" r="8" />
-            <path d="M10 6V14M6 10H14" />
-          </svg>
-          <span>San Jose</span>
+      <div className="max-w-5xl mx-auto px-8 h-16 flex items-center justify-between">
+        <Link to="/cliente/mascotas" className="flex items-center">
+          <img src={logoSrc} alt="San Jose" className="h-14 w-auto" />
         </Link>
         <div className="flex items-center gap-1 text-sm">
           {navItems.map((item) => {

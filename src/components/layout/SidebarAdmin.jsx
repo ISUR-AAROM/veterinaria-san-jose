@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAdmin } from '../../context/AdminContext'
 import { usePermisos } from '../../hooks/usePermisos'
+import logoSrc from '../../assets/logo.png'
 
 function IconAgenda({ className, stroke }) {
   return (
@@ -122,12 +123,8 @@ export function SidebarAdmin() {
   return (
     <aside className="fixed top-0 left-0 w-60 h-screen bg-[#2C1A0E] flex flex-col z-40">
       <div className="px-5 py-5 border-b border-white/10">
-        <Link to="/admin/agenda" className="flex items-center gap-2.5 text-white font-bold text-base">
-          <svg className="w-5 h-5 text-[#C2570F]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="10" cy="10" r="8" />
-            <path d="M10 6V14M6 10H14" />
-          </svg>
-          San Jose
+        <Link to="/admin/agenda" className="flex items-center">
+          <img src={logoSrc} alt="San Jose" className="h-12 w-auto brightness-0 invert" />
         </Link>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1 text-sm">

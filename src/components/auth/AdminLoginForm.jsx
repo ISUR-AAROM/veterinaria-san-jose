@@ -5,6 +5,7 @@ import { useAdmin } from '../../context/AdminContext'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { useReveal } from '../../hooks/useReveal'
+import logoSrc from '../../assets/logo.png'
 
 export function AdminLoginForm() {
   const navigate = useNavigate()
@@ -56,15 +57,9 @@ export function AdminLoginForm() {
       <div ref={ref} className={`w-full max-w-sm transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-[#C2570F]" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="8" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M10 8V5C10 3.89543 10.8954 3 12 3H16C17.1046 3 18 3.89543 18 5V8" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M8 14H20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                <path d="M8 18H16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
+            <div className="flex justify-center mb-4">
+              <img src={logoSrc} alt="San Jose" className="h-20 w-auto" />
             </div>
-            <h1 className="text-xl font-bold text-[#2C1A0E]">San Jose</h1>
             <p className="text-sm text-[#7A6555] mt-1">Acceso para personal</p>
           </div>
 

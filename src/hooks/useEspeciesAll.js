@@ -1,41 +1,57 @@
-import { useState, useCallback } from 'react'
-
-// MOCK — reemplazar con API real cuando el backend esté listo
-const MOCK = [
-  { id: 1, nombre: 'Perro', is_active: true, created_at: '2025-01-01' },
-  { id: 2, nombre: 'Gato', is_active: true, created_at: '2025-01-01' },
-  { id: 3, nombre: 'Conejo', is_active: true, created_at: '2025-01-01' },
-  { id: 4, nombre: 'Ave', is_active: false, created_at: '2025-01-01' },
-]
-
-let nextId = 5
+import { useState, useCallback, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 export function useEspeciesAll() {
-  const [especies, setEspecies] = useState(MOCK)
-  const [loading] = useState(false)
-  const [error] = useState(null)
+  const [especies, setEspecies] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const cargar = useCallback(async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('especie_mascota')
+      .select('id, nombre, is_active')
+      .order('nombre')
+    if (error) setError(error.message)
+    else setEspecies(data)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { cargar() }, [cargar])
 
   const agregar = useCallback(async (datos) => {
-    const nuevo = {
-      id: nextId++,
-      nombre: datos.nombre.trim(),
-      is_active: true,
-      created_at: new Date().toISOString(),
-    }
-    setEspecies((prev) => [...prev, nuevo])
+    const { data, error } = await supabase
+      .from('especie_mascota')
+      .insert({ nombre: datos.nombre.trim() })
+      .select()
+      .single()
+    if (error) throw error
+    setEspecies((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
   }, [])
 
   const actualizar = useCallback(async (id, datos) => {
-    setEspecies((prev) => prev.map((e) =>
-      e.id === id ? { ...e, nombre: datos.nombre.trim() } : e,
-    ))
+    const { data, error } = await supabase
+      .from('especie_mascota')
+      .update({ nombre: datos.nombre.trim() })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    setEspecies((prev) => prev.map((e) => (e.id === id ? data : e)))
   }, [])
 
   const toggleActivo = useCallback(async (id) => {
-    setEspecies((prev) => prev.map((e) =>
-      e.id === id ? { ...e, is_active: !e.is_active } : e,
-    ))
-  }, [])
+    const especie = especies.find((e) => e.id === id)
+    if (!especie) return
+    const { data, error } = await supabase
+      .from('especie_mascota')
+      .update({ is_active: !especie.is_active })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    setEspecies((prev) => prev.map((e) => (e.id === id ? data : e)))
+  }, [especies])
 
   return { especies, loading, error, agregar, actualizar, toggleActivo }
 }

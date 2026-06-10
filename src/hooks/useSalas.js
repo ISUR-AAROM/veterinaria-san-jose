@@ -1,53 +1,68 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
-const MOCK = [
-  { id: 1, nombre: 'Consultorio A', capacidad: 2, id_categoria: 1, categoria_nombre: 'Consultorio', is_active: true, created_at: '2025-01-01' },
-  { id: 2, nombre: 'Quirófano 1', capacidad: 5, id_categoria: 2, categoria_nombre: 'Quirófano', is_active: true, created_at: '2025-01-01' },
-  { id: 3, nombre: 'Sala de estética', capacidad: 3, id_categoria: 3, categoria_nombre: 'Estética', is_active: true, created_at: '2025-01-01' },
-  { id: 4, nombre: 'Consultorio B', capacidad: 2, id_categoria: 1, categoria_nombre: 'Consultorio', is_active: false, created_at: '2025-01-01' },
-]
+export function useSalas() {
+  const [salas, setSalas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-// MOCK — reemplazar con API real cuando el backend esté listo
-const CATEGORIA_MAP = { 1: 'Consultorio', 2: 'Quirófano', 3: 'Estética' }
+  const cargar = useCallback(async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('sala')
+      .select(`
+        id, nombre, capacidad, is_active,
+        categoria_sala ( id, nombre )
+      `)
+      .order('nombre')
+    if (error) setError(error.message)
+    else setSalas(data)
+    setLoading(false)
+  }, [])
 
-let nextId = 5
-
-export function useSalas({ soloActivas = false } = {}) {
-  const [salas, setSalas] = useState(() =>
-    soloActivas ? MOCK.filter((s) => s.is_active) : MOCK,
-  )
-  const [loading] = useState(false)
-  const [error] = useState(null)
+  useEffect(() => { cargar() }, [cargar])
 
   const agregar = useCallback(async (datos) => {
-    const nuevo = {
-      id: nextId++,
-      nombre: datos.nombre.trim(),
-      capacidad: Number(datos.capacidad),
-      id_categoria: Number(datos.id_categoria),
-      categoria_nombre: CATEGORIA_MAP[Number(datos.id_categoria)] ?? '',
-      is_active: true,
-      created_at: new Date().toISOString(),
-    }
-    setSalas((prev) => {
-      const next = [...prev, nuevo]
-      return soloActivas ? next.filter((s) => s.is_active) : next
-    })
-  }, [soloActivas])
+    const { data, error } = await supabase
+      .from('sala')
+      .insert({
+        nombre: datos.nombre.trim(),
+        capacidad: parseInt(datos.capacidad),
+        id_categoria: datos.id_categoria,
+      })
+      .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
+      .single()
+    if (error) throw error
+    setSalas((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+  }, [])
 
   const actualizar = useCallback(async (id, datos) => {
-    setSalas((prev) => prev.map((s) =>
-      s.id === id
-        ? { ...s, nombre: datos.nombre.trim(), capacidad: Number(datos.capacidad), id_categoria: Number(datos.id_categoria), categoria_nombre: CATEGORIA_MAP[Number(datos.id_categoria)] ?? s.categoria_nombre }
-        : s,
-    ))
+    const { data, error } = await supabase
+      .from('sala')
+      .update({
+        nombre: datos.nombre.trim(),
+        capacidad: parseInt(datos.capacidad),
+        id_categoria: datos.id_categoria,
+      })
+      .eq('id', id)
+      .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
+      .single()
+    if (error) throw error
+    setSalas((prev) => prev.map((s) => (s.id === id ? data : s)))
   }, [])
 
   const toggleActivo = useCallback(async (id) => {
-    setSalas((prev) => prev.map((s) =>
-      s.id === id ? { ...s, is_active: !s.is_active } : s,
-    ))
-  }, [])
+    const sala = salas.find((s) => s.id === id)
+    if (!sala) return
+    const { data, error } = await supabase
+      .from('sala')
+      .update({ is_active: !sala.is_active })
+      .eq('id', id)
+      .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
+      .single()
+    if (error) throw error
+    setSalas((prev) => prev.map((s) => (s.id === id ? data : s)))
+  }, [salas])
 
   return { salas, loading, error, agregar, actualizar, toggleActivo }
 }

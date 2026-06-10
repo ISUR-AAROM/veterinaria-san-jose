@@ -3,13 +3,29 @@ import { CatalogoLayout } from '../../../components/catalogos/CatalogoLayout'
 import { CatalogoModal } from '../../../components/catalogos/CatalogoModal'
 import { ToggleActivoBtn } from '../../../components/catalogos/ToggleActivoBtn'
 import { Badge } from '../../../components/ui/Badge'
-import { Table } from '../../../components/ui/Table'
 import { Input } from '../../../components/ui/Input'
 import { Select } from '../../../components/ui/Select'
 import { useServiciosAll } from '../../../hooks/useServiciosAll'
 import { useCategoriaSala } from '../../../hooks/useCategoriaSala'
 
-const inicial = { nombre: '', descripcion: '', duracion_minutos: '', precio: '', id_categoria_sala: '' }
+const FORM_VACIO = {
+  nombre: '',
+  descripcion: '',
+  duracion_minutos: '',
+  precio: '',
+  id_categoria_sala: '',
+}
+
+function validar(f) {
+  const e = {}
+  if (!f.nombre.trim()) e.nombre = 'Requerido'
+  if (!f.duracion_minutos || isNaN(f.duracion_minutos) || parseInt(f.duracion_minutos) <= 0)
+    e.duracion_minutos = 'Ingresa una duración válida en minutos'
+  if (!f.precio || isNaN(f.precio) || parseFloat(f.precio) <= 0)
+    e.precio = 'Ingresa un precio válido'
+  if (!f.id_categoria_sala) e.id_categoria_sala = 'Selecciona una categoría'
+  return e
+}
 
 function EditBtn({ onClick }) {
   return (
@@ -18,25 +34,27 @@ function EditBtn({ onClick }) {
       className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#C2570F] transition-colors"
       title="Editar"
     >
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M11.5 1.5L13.5 3.5L5 12L2 13L3 10L11.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-        <path d="M9 3L12 6" stroke="currentColor" strokeWidth="1.3"/>
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M11.5 1.5L13.5 3.5L5 12L2 13L3 10L11.5 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M9 3L12 6" stroke="currentColor" strokeWidth="1.3" />
       </svg>
     </button>
   )
 }
 
 export function Servicios() {
-  const { servicios, agregar, actualizar, toggleActivo } = useServiciosAll()
+  const { servicios, loading, agregar, actualizar, toggleActivo } = useServiciosAll()
   const { categorias } = useCategoriaSala()
 
   const [modal, setModal] = useState({ open: false, editando: null })
-  const [form, setForm] = useState(inicial)
+  const [form, setForm] = useState(FORM_VACIO)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
+  const categoriaOptions = categorias.map((c) => ({ value: c.id, label: c.nombre }))
+
   const abrirCrear = () => {
-    setForm(inicial)
+    setForm(FORM_VACIO)
     setErrors({})
     setModal({ open: true, editando: null })
   }
@@ -47,26 +65,16 @@ export function Servicios() {
       descripcion: s.descripcion || '',
       duracion_minutos: String(s.duracion_minutos),
       precio: String(s.precio),
-      id_categoria_sala: s.id_categoria_sala,
+      id_categoria_sala: s.categoria_sala?.id || '',
     })
     setErrors({})
     setModal({ open: true, editando: s })
   }
 
-  const validar = () => {
-    const e = {}
-    if (!form.nombre.trim()) e.nombre = 'Requerido'
-    if (!form.duracion_minutos || Number(form.duracion_minutos) < 1) e.duracion_minutos = 'Debe ser mayor a 0'
-    if (!form.precio || Number(form.precio) < 0) e.precio = 'Debe ser un monto válido'
-    if (!form.id_categoria_sala) e.id_categoria_sala = 'Seleccione una categoría'
-    return e
-  }
-
   const guardar = async () => {
-    const e = validar()
+    const e = validar(form)
     setErrors(e)
-    if (Object.keys(e).length) return
-
+    if (Object.keys(e).length > 0) return
     setSaving(true)
     try {
       if (modal.editando) {
@@ -75,40 +83,61 @@ export function Servicios() {
         await agregar(form)
       }
       setModal({ open: false, editando: null })
-    } catch {
-      // Error propagado del hook
+    } catch (err) {
+      setErrors({ nombre: err.message })
     }
     setSaving(false)
   }
 
+  const handleChange = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+
   return (
-    <CatalogoLayout titulo="Servicios" descripcion="Administración de servicios ofrecidos" onAgregar={abrirCrear} total={servicios.length}>
-      <Table
-        headers={['Nombre', 'Descripción', 'Duración', 'Precio', 'Categoría', 'Estado', '']}
-        rows={servicios}
-        renderRow={(s) => (
-          <>
-            <td className="px-4 py-3">
-              <span className="text-sm font-medium text-[#2C1A0E]">{s.nombre}</span>
-            </td>
-            <td className="px-4 py-3 text-sm text-[#7A6555]">{s.descripcion || '—'}</td>
-            <td className="px-4 py-3">
-              <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">{s.duracion_minutos} min</span>
-            </td>
-            <td className="px-4 py-3 text-sm font-semibold text-[#2C1A0E]">S/ {Number(s.precio).toFixed(2)}</td>
-            <td className="px-4 py-3 text-sm text-[#7A6555]">{s.categoria_nombre}</td>
-            <td className="px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Badge activo={s.is_active} />
-                <ToggleActivoBtn activo={s.is_active} onToggle={() => toggleActivo(s.id)} nombre={s.nombre} />
-              </div>
-            </td>
-            <td className="px-4 py-3">
-              <EditBtn onClick={() => abrirEditar(s)} />
-            </td>
-          </>
-        )}
-      />
+    <CatalogoLayout
+      titulo="Servicios"
+      descripcion="Administración de servicios ofrecidos"
+      onAgregar={abrirCrear}
+      total={servicios.length}
+    >
+      <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-[#FAF7F2]">
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Nombre</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Categoría</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Duración</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Precio</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Estado</th>
+              <th className="px-5 py-3.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-[#7A6555]">Cargando...</td></tr>
+            ) : servicios.length === 0 ? (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-[#7A6555]">Sin registros</td></tr>
+            ) : servicios.map((s) => (
+              <tr key={s.id} className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
+                <td className="px-5 py-3.5">
+                  <p className="text-sm font-medium text-[#2C1A0E]">{s.nombre}</p>
+                  {s.descripcion && <p className="text-xs text-[#7A6555] mt-0.5 line-clamp-1">{s.descripcion}</p>}
+                </td>
+                <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">{s.categoria_sala?.nombre || '—'}</td>
+                <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">{s.duracion_minutos} min</td>
+                <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">S/ {parseFloat(s.precio).toFixed(2)}</td>
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-2">
+                    <Badge activo={s.is_active} />
+                    <ToggleActivoBtn activo={s.is_active} onToggle={() => toggleActivo(s.id)} nombre={s.nombre} />
+                  </div>
+                </td>
+                <td className="px-5 py-3.5">
+                  <EditBtn onClick={() => abrirEditar(s)} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <CatalogoModal
         open={modal.open}
@@ -117,19 +146,20 @@ export function Servicios() {
         onGuardar={guardar}
         cargando={saving}
       >
-        <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} error={errors.nombre} placeholder="Ej: Consulta General" />
-        <Input label="Descripción" value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} placeholder="Breve descripción del servicio" />
-        <div className="grid grid-cols-2 gap-3">
-          <Input label="Duración (min)" type="number" value={form.duracion_minutos} onChange={(e) => setForm({ ...form, duracion_minutos: e.target.value })} error={errors.duracion_minutos} placeholder="30" />
-          <Input label="Precio (S/)" type="number" step="0.01" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} error={errors.precio} placeholder="40.00" />
-        </div>
+        <Input label="Nombre" value={form.nombre} onChange={handleChange('nombre')} error={errors.nombre} placeholder="Ej: Consulta general" />
+        <Input label="Descripción (opcional)" value={form.descripcion} onChange={handleChange('descripcion')} placeholder="Breve descripción del servicio" />
         <Select
-          label="Categoría de sala"
+          label="Categoría"
+          placeholder="Seleccionar categoría"
+          options={categoriaOptions}
           value={form.id_categoria_sala}
-          onChange={(e) => setForm({ ...form, id_categoria_sala: e.target.value })}
+          onChange={handleChange('id_categoria_sala')}
           error={errors.id_categoria_sala}
-          options={categorias.map((c) => ({ value: c.id, label: c.nombre }))}
         />
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Duración (min)" type="number" min="1" value={form.duracion_minutos} onChange={handleChange('duracion_minutos')} error={errors.duracion_minutos} placeholder="30" />
+          <Input label="Precio (S/)" type="number" min="0" step="0.01" value={form.precio} onChange={handleChange('precio')} error={errors.precio} placeholder="50.00" />
+        </div>
       </CatalogoModal>
     </CatalogoLayout>
   )

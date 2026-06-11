@@ -3,6 +3,7 @@ import { CatalogoLayout } from '../../../components/catalogos/CatalogoLayout'
 import { CatalogoModal } from '../../../components/catalogos/CatalogoModal'
 import { ToggleActivoBtn } from '../../../components/catalogos/ToggleActivoBtn'
 import { Badge } from '../../../components/ui/Badge'
+import { BarraBusqueda } from '../../../components/ui/BarraBusqueda'
 import { Input } from '../../../components/ui/Input'
 import { Select } from '../../../components/ui/Select'
 import { usePlantillas } from '../../../hooks/usePlantillas'
@@ -59,6 +60,8 @@ export function Plantillas() {
   const [form, setForm] = useState(FORM_VACIO)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroDia, setFiltroDia] = useState('')
 
   const servicioOptions = useMemo(() =>
     servicios.filter((s) => s.is_active).map((s) => ({ value: s.id, label: s.nombre })),
@@ -68,6 +71,21 @@ export function Plantillas() {
     salas.filter((s) => s.is_active).map((s) => ({ value: s.id, label: s.nombre })),
     [salas]
   )
+
+  const filtrados = useMemo(() => {
+    let data = plantillas
+    if (filtroDia) {
+      data = data.filter((p) => String(p.dia_semana) === filtroDia)
+    }
+    if (busqueda.trim()) {
+      const q = busqueda.trim().toLowerCase()
+      data = data.filter((p) =>
+        (p.servicio?.nombre || '').toLowerCase().includes(q) ||
+        (p.sala?.nombre || '').toLowerCase().includes(q)
+      )
+    }
+    return data
+  }, [plantillas, busqueda, filtroDia])
 
   const abrirCrear = () => {
     setForm(FORM_VACIO)
@@ -115,6 +133,14 @@ export function Plantillas() {
       onAgregar={abrirCrear}
       total={plantillas.length}
     >
+      <BarraBusqueda
+        placeholder="Buscar por servicio o sala..."
+        value={busqueda}
+        onChange={setBusqueda}
+        filtros={[
+          { label: 'Todos los días', value: filtroDia, onChange: setFiltroDia, options: DIA_OPTIONS },
+        ]}
+      />
       <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
         <table className="w-full">
           <thead>
@@ -131,9 +157,9 @@ export function Plantillas() {
           <tbody>
             {loading ? (
               <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-[#7A6555]">Cargando...</td></tr>
-            ) : plantillas.length === 0 ? (
-              <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-[#7A6555]">Sin registros</td></tr>
-            ) : plantillas.map((p) => (
+            ) : filtrados.length === 0 ? (
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-[#7A6555]">{busqueda ? 'Sin resultados para esta búsqueda' : 'Sin registros'}</td></tr>
+            ) : filtrados.map((p) => (
               <tr key={p.id} className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
                 <td className="px-5 py-3.5 text-sm font-medium text-[#2C1A0E]">{p.servicio?.nombre || '—'}</td>
                 <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">{p.sala?.nombre || '—'}</td>

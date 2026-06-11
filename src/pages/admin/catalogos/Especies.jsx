@@ -1,8 +1,9 @@
-import { useState, Fragment } from 'react'
+import { useState, Fragment, useMemo } from 'react'
 import { CatalogoLayout } from '../../../components/catalogos/CatalogoLayout'
 import { CatalogoModal } from '../../../components/catalogos/CatalogoModal'
 import { ToggleActivoBtn } from '../../../components/catalogos/ToggleActivoBtn'
 import { Badge } from '../../../components/ui/Badge'
+import { BarraBusqueda } from '../../../components/ui/BarraBusqueda'
 import { Input } from '../../../components/ui/Input'
 import { useEspeciesAll } from '../../../hooks/useEspeciesAll'
 import { useRazasAdmin } from '../../../hooks/useRazasAdmin'
@@ -31,6 +32,13 @@ export function Especies() {
   const [form, setForm] = useState({ nombre: '' })
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+
+  const filtradas = useMemo(() => {
+    if (!busqueda.trim()) return especies
+    const q = busqueda.trim().toLowerCase()
+    return especies.filter((e) => e.nombre.toLowerCase().includes(q))
+  }, [especies, busqueda])
 
   const [modalRaza, setModalRaza] = useState(false)
   const [razaNombre, setRazaNombre] = useState('')
@@ -91,6 +99,11 @@ export function Especies() {
 
   return (
     <CatalogoLayout titulo="Especies y razas" descripcion="Administración de especies y sus razas asociadas" onAgregar={abrirCrear} total={especies.length}>
+      <BarraBusqueda
+        placeholder="Buscar especie..."
+        value={busqueda}
+        onChange={setBusqueda}
+      />
       <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
         <table className="w-full">
           <thead>
@@ -101,13 +114,13 @@ export function Especies() {
             </tr>
           </thead>
           <tbody>
-            {especies.length === 0 ? (
+            {filtradas.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-5 py-8 text-center text-sm text-[#7A6555]">
-                  Sin registros
+                  {busqueda ? 'Sin resultados para esta búsqueda' : 'Sin registros'}
                 </td>
               </tr>
-            ) : especies.map((e) => (
+            ) : filtradas.map((e) => (
               <Fragment key={e.id}>
                 <tr className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
                   <td className="px-5 py-3.5">

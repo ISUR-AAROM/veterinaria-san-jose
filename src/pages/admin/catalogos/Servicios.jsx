@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { CatalogoLayout } from '../../../components/catalogos/CatalogoLayout'
 import { CatalogoModal } from '../../../components/catalogos/CatalogoModal'
 import { ToggleActivoBtn } from '../../../components/catalogos/ToggleActivoBtn'
 import { Badge } from '../../../components/ui/Badge'
+import { BarraBusqueda } from '../../../components/ui/BarraBusqueda'
 import { Input } from '../../../components/ui/Input'
 import { Select } from '../../../components/ui/Select'
 import { useServiciosAll } from '../../../hooks/useServiciosAll'
@@ -50,8 +51,25 @@ export function Servicios() {
   const [form, setForm] = useState(FORM_VACIO)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState('')
 
   const categoriaOptions = categorias.map((c) => ({ value: c.id, label: c.nombre }))
+
+  const filtrados = useMemo(() => {
+    let data = servicios
+    if (filtroCategoria) {
+      data = data.filter((s) => s.categoria_sala?.id === filtroCategoria)
+    }
+    if (busqueda.trim()) {
+      const q = busqueda.trim().toLowerCase()
+      data = data.filter((s) =>
+        s.nombre.toLowerCase().includes(q) ||
+        (s.descripcion || '').toLowerCase().includes(q)
+      )
+    }
+    return data
+  }, [servicios, busqueda, filtroCategoria])
 
   const abrirCrear = () => {
     setForm(FORM_VACIO)
@@ -98,6 +116,14 @@ export function Servicios() {
       onAgregar={abrirCrear}
       total={servicios.length}
     >
+      <BarraBusqueda
+        placeholder="Buscar por nombre o descripción..."
+        value={busqueda}
+        onChange={setBusqueda}
+        filtros={[
+          { label: 'Todas las categorías', value: filtroCategoria, onChange: setFiltroCategoria, options: categoriaOptions },
+        ]}
+      />
       <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
         <table className="w-full">
           <thead>
@@ -113,9 +139,9 @@ export function Servicios() {
           <tbody>
             {loading ? (
               <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-[#7A6555]">Cargando...</td></tr>
-            ) : servicios.length === 0 ? (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-[#7A6555]">Sin registros</td></tr>
-            ) : servicios.map((s) => (
+            ) : filtrados.length === 0 ? (
+              <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-[#7A6555]">{busqueda ? 'Sin resultados para esta búsqueda' : 'Sin registros'}</td></tr>
+            ) : filtrados.map((s) => (
               <tr key={s.id} className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
                 <td className="px-5 py-3.5">
                   <p className="text-sm font-medium text-[#2C1A0E]">{s.nombre}</p>

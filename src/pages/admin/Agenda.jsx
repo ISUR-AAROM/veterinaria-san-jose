@@ -3,6 +3,7 @@ import { FiltroFecha } from '../../components/agenda/FiltroFecha'
 import { ColumnaAgenda } from '../../components/agenda/ColumnaAgenda'
 import { useAgenda } from '../../hooks/useAgenda'
 import { useSalas } from '../../hooks/useSalas'
+import { BarraBusqueda } from '../../components/ui/BarraBusqueda'
 
 function formatDate(d) {
   return d.toISOString().split('T')[0]
@@ -12,17 +13,28 @@ export function Agenda() {
   const [fecha, setFecha] = useState(() => formatDate(new Date()))
   const { citas, loading: loadingCitas } = useAgenda(fecha)
   const { salas, loading: loadingSalas } = useSalas()
+  const [busqueda, setBusqueda] = useState('')
+
+  const citasFiltradas = useMemo(() => {
+    if (!busqueda.trim()) return citas
+    const q = busqueda.trim().toLowerCase()
+    return citas.filter((c) =>
+      (c.mascota?.nombre || '').toLowerCase().includes(q) ||
+      (c.cliente?.nombre || '').toLowerCase().includes(q) ||
+      (c.cliente?.apellido || '').toLowerCase().includes(q)
+    )
+  }, [citas, busqueda])
 
   const citasPorSala = useMemo(() => {
     const map = {}
-    citas.forEach((cita) => {
+    citasFiltradas.forEach((cita) => {
       const salaId = cita.hueco?.sala?.id
       if (!salaId) return
       if (!map[salaId]) map[salaId] = []
       map[salaId].push(cita)
     })
     return map
-  }, [citas])
+  }, [citasFiltradas])
 
   const salasActivas = useMemo(() => {
     return salas.filter((s) => s.is_active)
@@ -37,7 +49,25 @@ export function Agenda() {
           <h1 className="text-2xl font-bold text-[#2C1A0E]">Agenda del día</h1>
           <p className="text-sm text-[#7A6555] mt-1">Gestión de citas y horarios</p>
         </div>
-        <FiltroFecha fecha={fecha} onChange={setFecha} />
+        <div className="flex items-center gap-3">
+          <div className="relative w-56">
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A6555]"
+              viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"
+            >
+              <circle cx="7" cy="7" r="4.5" />
+              <path d="M10.5 10.5L14 14" strokeLinecap="round" />
+            </svg>
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar mascota o cliente..."
+              className="w-full pl-9 pr-3 py-2 border border-[#E8DDD0] rounded-lg text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F] focus:border-transparent placeholder:text-[#7A6555]"
+            />
+          </div>
+          <FiltroFecha fecha={fecha} onChange={setFecha} />
+        </div>
       </div>
 
       {loading ? (

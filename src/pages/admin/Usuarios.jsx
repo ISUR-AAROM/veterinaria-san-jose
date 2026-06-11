@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useUsuarios } from '../../hooks/useUsuarios'
 import { useTipoDocumento } from '../../hooks/useTipoDocumento'
 import { UsuarioModal } from '../../components/usuarios/UsuarioModal'
+import { BarraBusqueda } from '../../components/ui/BarraBusqueda'
 import { CatalogoLayout } from '../../components/catalogos/CatalogoLayout'
 
 const ROL_COLORS = {
@@ -23,6 +24,24 @@ export function Usuarios() {
   const { tipos: tiposDocumento } = useTipoDocumento()
   const [modal, setModal] = useState({ open: false, editando: null })
   const [form, setForm] = useState(USUARIO_VACIO)
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('')
+
+  const filtrados = useMemo(() => {
+    let data = usuarios
+    if (filtroTipo) {
+      data = data.filter((u) => u.tipo === filtroTipo)
+    }
+    if (busqueda.trim()) {
+      const q = busqueda.trim().toLowerCase()
+      data = data.filter((u) =>
+        (u.nombre || '').toLowerCase().includes(q) ||
+        (u.apellido || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q)
+      )
+    }
+    return data
+  }, [usuarios, busqueda, filtroTipo])
 
   const abrirCrear = useCallback(() => {
     setForm(USUARIO_VACIO)
@@ -60,8 +79,8 @@ export function Usuarios() {
     await toggleEstado(usuario.cuenta_id)
   }, [toggleEstado])
 
-  const activos = usuarios.filter((u) => u.is_active)
-  const inactivos = usuarios.filter((u) => !u.is_active)
+  const activos = useMemo(() => filtrados.filter((u) => u.is_active), [filtrados])
+  const inactivos = useMemo(() => filtrados.filter((u) => !u.is_active), [filtrados])
 
   return (
     <div className="animate-fade-in-up">
@@ -77,6 +96,18 @@ export function Usuarios() {
             {error}
           </div>
         )}
+
+        <BarraBusqueda
+          placeholder="Buscar por nombre, apellido o email..."
+          value={busqueda}
+          onChange={setBusqueda}
+          filtros={[
+            { label: 'Todos los tipos', value: filtroTipo, onChange: setFiltroTipo, options: [
+              { value: 'CLIENTE', label: 'Cliente' },
+              { value: 'PERSONAL', label: 'Personal' },
+            ]},
+          ]}
+        />
 
         {loading ? (
           <div className="text-center py-12 text-sm text-[#7A6555]">Cargando usuarios...</div>

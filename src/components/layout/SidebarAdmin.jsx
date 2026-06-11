@@ -53,6 +53,18 @@ function IconPlantillas({ className, stroke }) {
   )
 }
 
+function IconUsuarios({ className, stroke }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
+      <circle cx="6" cy="5" r="2.5" />
+      <path d="M1 14C1 11.2386 3.23858 9 6 9C8.76142 9 11 11.2386 11 14" strokeLinecap="round" />
+      <circle cx="11.5" cy="4.5" r="1.8" />
+      <path d="M11.5 9C13.1569 9 14.5 10.3431 14.5 12" strokeLinecap="round" />
+      <path d="M11.5 4.5L11.5 2.5M10.5 3.5L12.5 3.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function IconEspecies({ className, stroke }) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="none" stroke={stroke} strokeWidth="1.5">
@@ -82,6 +94,14 @@ export function SidebarAdmin() {
         icon: (active) => <IconClientes className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
       },
     ]
+
+    if (can('personal.gestionar')) {
+      items.push({
+        label: 'Usuarios',
+        path: '/admin/usuarios',
+        icon: (active) => <IconUsuarios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+      })
+    }
 
     if (can('catalogos')) {
       items.push({

@@ -28,6 +28,7 @@ const Servicios = lazy(() => import('./pages/admin/catalogos/Servicios').then((m
 const Salas = lazy(() => import('./pages/admin/catalogos/Salas').then((m) => ({ default: m.Salas })))
 const Plantillas = lazy(() => import('./pages/admin/catalogos/Plantillas').then((m) => ({ default: m.Plantillas })))
 const Especies = lazy(() => import('./pages/admin/catalogos/Especies').then((m) => ({ default: m.Especies })))
+const Usuarios = lazy(() => import('./pages/admin/Usuarios').then((m) => ({ default: m.Usuarios })))
 
 const loadingFallback = (
   <div className="min-h-screen flex items-center justify-center text-sm text-[#7A6555]">
@@ -83,6 +84,12 @@ export const router = createBrowserRouter([
               { path: 'clientes/:id', element: withSuspense(<DetalleCliente />) },
               { path: 'citas/:id', element: withSuspense(<DetalleCita />) },
               { path: 'historia/:idMascota', element: withSuspense(<HistoriaClinica />) },
+              {
+                element: <RutaRol accion="personal.gestionar" />,
+                children: [
+                  { path: 'usuarios', element: withSuspense(<Usuarios />) },
+                ],
+              },
               {
                 element: <RutaRol accion="catalogos" />,
                 children: [

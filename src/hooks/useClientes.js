@@ -11,7 +11,7 @@ export function useClientes() {
     let query = supabase
       .from('cliente')
       .select(`
-        id, nombre, apellido, numero_documento, telefono, email,
+        id, nombre, apellido, numero_documento, telefono,
         tipo_documento ( id, nombre )
       `)
 

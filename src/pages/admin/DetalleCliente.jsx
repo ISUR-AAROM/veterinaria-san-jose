@@ -54,7 +54,7 @@ export function DetalleCliente() {
     const { data: c } = await supabase
       .from('cliente')
       .select(`
-        id, nombre, apellido, numero_documento, telefono, email,
+        id, nombre, apellido, numero_documento, telefono,
         tipo_documento ( id, nombre )
       `)
       .eq('id', id)
@@ -136,10 +136,7 @@ export function DetalleCliente() {
             <p className="text-xs text-[#7A6555]">Teléfono</p>
             <p className="text-sm font-medium text-[#2C1A0E]">{cliente.telefono || '—'}</p>
           </div>
-          <div>
-            <p className="text-xs text-[#7A6555]">Email</p>
-            <p className="text-sm font-medium text-[#2C1A0E]">{cliente.email || '—'}</p>
-          </div>
+
           <div>
             <p className="text-xs text-[#7A6555]">Mascotas registradas</p>
             <p className="text-sm font-medium text-[#2C1A0E]">{mascotas.length}</p>

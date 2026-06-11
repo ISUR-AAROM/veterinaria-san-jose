@@ -30,16 +30,24 @@ export function useClientes() {
       return
     }
 
-    const clientsWithCount = await Promise.all(
-      (data || []).map(async (cliente) => {
-        const { count } = await supabase
-          .from('mascota')
-          .select('*', { count: 'exact', head: true })
-          .eq('id_cliente', cliente.id)
-          .eq('is_active', true)
-        return { ...cliente, mascotas_activas: count || 0 }
-      })
-    )
+    const clientIds = (data || []).map((c) => c.id)
+    const { data: mascotasData } = await supabase
+      .from('mascota')
+      .select('id_cliente')
+      .eq('is_active', true)
+      .in('id_cliente', clientIds)
+
+    const countMap = {}
+    if (mascotasData) {
+      for (const m of mascotasData) {
+        countMap[m.id_cliente] = (countMap[m.id_cliente] || 0) + 1
+      }
+    }
+
+    const clientsWithCount = (data || []).map((cliente) => ({
+      ...cliente,
+      mascotas_activas: countMap[cliente.id] || 0,
+    }))
 
     setClientes(clientsWithCount)
     setLoading(false)

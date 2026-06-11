@@ -75,11 +75,7 @@ export function InfoCitaPanel({
 
       {cita?.estado === 'FINALIZADA' && (
         <div className="pt-2 border-t border-[#E8DDD0]">
-          <Button
-            variant="secondary"
-            className="w-full"
-            onClick={() => {}}
-          >
+          <Button variant="secondary" className="w-full" disabled>
             Ver / Generar PDF receta
           </Button>
         </div>

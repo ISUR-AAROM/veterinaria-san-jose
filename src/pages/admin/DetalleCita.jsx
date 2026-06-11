@@ -40,15 +40,18 @@ export function DetalleCita() {
       .single()
     setCita(data)
 
+    const promises = []
     if (data?.estado === 'EN_ESPERA' || data?.estado === 'FINALIZADA') {
-      const pago = await getPagoDeCita(data.id)
-      if (pago) setPagoInfo(pago)
+      promises.push(
+        getPagoDeCita(data.id).then((pago) => { if (pago) setPagoInfo(pago) })
+      )
     }
-
     if (data?.estado === 'FINALIZADA') {
-      const receta = await getRecetaDeCita(data.id)
-      if (receta) setRecetaInfo(receta)
+      promises.push(
+        getRecetaDeCita(data.id).then((receta) => { if (receta) setRecetaInfo(receta) })
+      )
     }
+    await Promise.all(promises)
 
     setLoading(false)
   }, [id, getPagoDeCita, getRecetaDeCita])

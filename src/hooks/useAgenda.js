@@ -52,7 +52,7 @@ export function useAgenda(fecha) {
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, [cargar, fecha])
+  }, [cargar])
 
   return { citas, loading, error, recargar: cargar }
 }

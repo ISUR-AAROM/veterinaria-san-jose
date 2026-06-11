@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 function formatDate(date) {
   return date.toISOString().split('T')[0]
 }
@@ -33,8 +31,8 @@ export function FiltroFecha({ fecha, onChange }) {
 
   const hoy = () => onChange(formatDate(new Date()))
 
-  const displayLabel = useMemo(() => formatDisplay(new Date(fecha)), [fecha])
-  const isToday = useMemo(() => formatDate(new Date()) === fecha, [fecha])
+  const displayLabel = formatDisplay(new Date(fecha))
+  const isToday = formatDate(new Date()) === fecha
 
   return (
     <div className="flex items-center gap-3">

@@ -62,7 +62,7 @@ BEGIN
   FROM public.cuenta c
   JOIN public.personal p ON p.id_cuenta = c.id
 
-  ORDER BY tipo, nombre, apellido;
+  ORDER BY 5, 6, 7;
 END;
 $$;
 

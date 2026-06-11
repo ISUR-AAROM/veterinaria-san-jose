@@ -95,18 +95,17 @@ export function SidebarAdmin() {
       },
     ]
 
-    if (can('personal.gestionar')) {
-      items.push({
-        label: 'Usuarios',
-        path: '/admin/usuarios',
-        icon: (active) => <IconUsuarios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
-      })
-    }
-
     if (can('catalogos')) {
       items.push({
         label: 'Catalogos',
         children: [
+          ...(can('personal.gestionar')
+            ? [{
+                label: 'Usuarios',
+                path: '/admin/usuarios',
+                icon: (active) => <IconUsuarios className="w-4 h-4" stroke={active ? '#fff' : '#E8DDD0'} />,
+              }]
+            : []),
           {
             label: 'Servicios',
             path: '/admin/catalogos/servicios',

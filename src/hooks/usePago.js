@@ -9,22 +9,13 @@ export function usePago() {
     setSaving(true)
     setError(null)
     try {
-      const { error: pagoError } = await supabase
-        .from('pago')
-        .insert({
-          id_cita,
-          id_metodo_pago,
-          monto: parseFloat(monto),
-          confirmado_por,
-        })
-      if (pagoError) throw pagoError
-
-      const { error: citaError } = await supabase
-        .from('cita')
-        .update({ estado: 'EN_ESPERA' })
-        .eq('id', id_cita)
-      if (citaError) throw citaError
-
+      const { error: rpcError } = await supabase.rpc('registrar_pago', {
+        p_id_cita: id_cita,
+        p_id_metodo_pago: id_metodo_pago,
+        p_monto: parseFloat(monto),
+        p_confirmado_por: confirmado_por,
+      })
+      if (rpcError) throw rpcError
       return true
     } catch (err) {
       setError(err.message)

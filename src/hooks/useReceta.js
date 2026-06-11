@@ -7,66 +7,30 @@ export function useReceta() {
 
   const finalizarAtencion = useCallback(async ({
     id_cita,
-    id_mascota,
+    id_veterinario,
     diagnostico,
     observaciones,
     medicamentos,
-    firmada,
+    firmado,
     id_tipo_entrada = 1,
   }) => {
     setSaving(true)
     setError(null)
     try {
-      const { data: receta, error: recetaError } = await supabase
-        .from('receta')
-        .insert({
-          id_cita,
-          diagnostico: diagnostico.trim(),
-          observaciones: observaciones?.trim() || null,
-          firmada,
-        })
-        .select('id')
-        .single()
-      if (recetaError) throw recetaError
-
-      if (medicamentos.length > 0) {
-        const { error: detalleError } = await supabase
-          .from('receta_detalle')
-          .insert(
-            medicamentos.map((m) => ({
-              id_receta: receta.id,
-              nombre_medicamento: m.nombre.trim(),
-              dosis: m.dosis?.trim() || null,
-              indicaciones: m.indicaciones?.trim() || null,
-            }))
-          )
-        if (detalleError) throw detalleError
-      }
-
-      const { data: hc } = await supabase
-        .from('historia_clinica')
-        .select('id')
-        .eq('id_mascota', id_mascota)
-        .single()
-
-      if (hc) {
-        const { error: entradaError } = await supabase
-          .from('entrada_historia_clinica')
-          .insert({
-            id_historia_clinica: hc.id,
-            id_tipo_entrada,
-            diagnostico: diagnostico.trim(),
-            observaciones: observaciones?.trim() || null,
-          })
-        if (entradaError) throw entradaError
-      }
-
-      const { error: citaError } = await supabase
-        .from('cita')
-        .update({ estado: 'FINALIZADA' })
-        .eq('id', id_cita)
-      if (citaError) throw citaError
-
+      const { error: rpcError } = await supabase.rpc('finalizar_atencion', {
+        p_id_cita: id_cita,
+        p_id_veterinario: id_veterinario,
+        p_diagnostico: diagnostico.trim(),
+        p_observaciones: observaciones?.trim() || null,
+        p_firmado,
+        p_medicamentos: medicamentos.map((m) => ({
+          medicamento: m.nombre.trim(),
+          dosis: m.dosis?.trim() || null,
+          indicaciones: m.indicaciones?.trim() || null,
+        })),
+        p_id_tipo_entrada: id_tipo_entrada,
+      })
+      if (rpcError) throw rpcError
       return true
     } catch (err) {
       setError(err.message)
@@ -80,8 +44,8 @@ export function useReceta() {
     const { data: receta } = await supabase
       .from('receta')
       .select(`
-        id, diagnostico, observaciones, firmada, created_at,
-        receta_detalle ( id, nombre_medicamento, dosis, indicaciones )
+        id, diagnostico, observaciones, firmado, created_at,
+        receta_detalle ( id, medicamento, dosis, indicaciones )
       `)
       .eq('id_cita', idCita)
       .single()

@@ -87,8 +87,6 @@ export function RegistroForm() {
         return
       }
 
-      const idCuenta = authData.user.id
-
       const { error: registroError } = await supabase.rpc('register_cliente', {
         p_id_tipo_documento: cliente.id_tipo_documento,
         p_numero_documento: cliente.numero_documento,

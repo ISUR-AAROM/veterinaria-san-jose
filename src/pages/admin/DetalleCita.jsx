@@ -75,14 +75,14 @@ export function DetalleCita() {
 
   const handleIniciarAtencion = () => setMostrandoAtencion(true)
 
-  const handleFinalizarAtencion = async ({ diagnostico, observaciones, medicamentos, firmada }) => {
+  const handleFinalizarAtencion = async ({ diagnostico, observaciones, medicamentos, firmado }) => {
     const ok = await finalizarAtencion({
       id_cita: parseInt(id),
-      id_mascota: cita.mascota.id,
+      id_veterinario: personal?.id,
       diagnostico,
       observaciones,
       medicamentos,
-      firmada,
+      firmado,
     })
     if (ok) {
       setMostrandoAtencion(false)
@@ -92,17 +92,8 @@ export function DetalleCita() {
 
   const handleCancelarCita = async () => {
     if (!window.confirm('¿Estás seguro? Esta acción no se puede deshacer')) return
-    const { error } = await supabase
-      .from('cita')
-      .update({ estado: 'CANCELADA' })
-      .eq('id', id)
-    if (!error) {
-      await supabase
-        .from('hueco')
-        .update({ bloqueado: false })
-        .eq('id', cita.hueco?.id)
-      navigate('/admin/agenda')
-    }
+    const { error } = await supabase.rpc('cancelar_cita', { p_id_cita: id })
+    if (!error) navigate('/admin/agenda')
   }
 
   if (loading) {
@@ -175,7 +166,7 @@ export function DetalleCita() {
                     <div className="space-y-1.5">
                       {recetaInfo.receta_detalle.map((det) => (
                         <div key={det.id} className="bg-[#FAF7F2] rounded-lg p-2.5">
-                          <p className="text-sm font-medium text-[#2C1A0E]">{det.nombre_medicamento}</p>
+                          <p className="text-sm font-medium text-[#2C1A0E]">{det.medicamento}</p>
                           {det.dosis && <p className="text-xs text-[#7A6555]">Dosis: {det.dosis}</p>}
                           {det.indicaciones && <p className="text-xs text-[#7A6555]">Ind: {det.indicaciones}</p>}
                         </div>
@@ -184,7 +175,7 @@ export function DetalleCita() {
                   </div>
                 )}
                 <p className="text-xs text-[#7A6555]">
-                  {recetaInfo.firmada ? '✓ Firmada' : 'Sin firmar'}
+                  {recetaInfo.firmado ? '✓ Firmada' : 'Sin firmar'}
                 </p>
               </div>
             </div>

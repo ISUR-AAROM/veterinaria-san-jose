@@ -1,21 +1,87 @@
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useClientes } from '../../hooks/useClientes'
+
 export function Clientes() {
+  const navigate = useNavigate()
+  const { clientes, loading, buscar } = useClientes()
+  const [busqueda, setBusqueda] = useState('')
+
+  const handleSearch = useCallback((e) => {
+    const val = e.target.value
+    setBusqueda(val)
+    buscar(val)
+  }, [buscar])
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      buscar(busqueda)
+    }
+  }, [buscar, busqueda])
+
   return (
     <div className="animate-fade-in-up">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#2C1A0E]">Clientes</h1>
-        <p className="text-sm text-[#7A6555] mt-1">Gestion de clientes y sus mascotas</p>
-      </div>
-      <div className="bg-white rounded-2xl border border-[#E8DDD0] p-14 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mb-5">
-          <svg className="w-8 h-8 text-[#C2570F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="9" cy="8" r="3.5" />
-            <path d="M2 20C2 16.6863 4.68629 14 8 14C11.3137 14 14 16.6863 14 20" strokeLinecap="round" />
-            <circle cx="16" cy="8" r="2.5" />
-            <path d="M16 14C18.2091 14 20 15.7909 20 18" strokeLinecap="round" />
-          </svg>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#2C1A0E]">Clientes</h1>
+          <p className="text-sm text-[#7A6555] mt-1">Gestión de clientes y sus mascotas</p>
         </div>
-        <h2 className="text-lg font-semibold text-[#2C1A0E] mb-1">Proximamente</h2>
-        <p className="text-sm text-[#7A6555] max-w-xs">La lista de clientes con busqueda y filtros estara disponible en la proxima actualizacion.</p>
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A6555]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="7" cy="7" r="4.5" />
+            <path d="M10.5 10.5L14 14" strokeLinecap="round" />
+          </svg>
+          <input
+            type="text"
+            value={busqueda}
+            onChange={handleSearch}
+            onKeyDown={handleKeyDown}
+            placeholder="Buscar por nombre, apellido o documento..."
+            className="w-80 pl-9 pr-3 py-2 border border-[#E8DDD0] rounded-lg text-sm text-[#2C1A0E] bg-white focus:outline-none focus:ring-2 focus:ring-[#C2570F] focus:border-transparent placeholder:text-[#7A6555]"
+          />
+        </div>
+      </div>
+
+      <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-[#FAF7F2]">
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Nombre completo</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Documento</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Teléfono</th>
+              <th className="text-xs font-semibold text-[#7A6555] uppercase tracking-wide px-5 py-3.5 text-left">Mascotas activas</th>
+              <th className="px-5 py-3.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-[#7A6555]">Cargando...</td></tr>
+            ) : clientes.length === 0 ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-[#7A6555]">
+                {busqueda ? 'Sin resultados para esta búsqueda' : 'No hay clientes registrados'}
+              </td></tr>
+            ) : clientes.map((c) => (
+              <tr key={c.id} className="border-t border-[#E8DDD0] hover:bg-[#FAF7F2] transition-colors">
+                <td className="px-5 py-3.5">
+                  <p className="text-sm font-medium text-[#2C1A0E]">{c.nombre} {c.apellido}</p>
+                </td>
+                <td className="px-5 py-3.5">
+                  <p className="text-sm text-[#2C1A0E]">{c.tipo_documento?.nombre} {c.numero_documento}</p>
+                </td>
+                <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">{c.telefono || '—'}</td>
+                <td className="px-5 py-3.5 text-sm text-[#2C1A0E]">{c.mascotas_activas}</td>
+                <td className="px-5 py-3.5">
+                  <button
+                    onClick={() => navigate(`/admin/clientes/${c.id}`)}
+                    className="text-xs font-medium text-[#C2570F] hover:text-[#A8480C] transition-colors"
+                  >
+                    Ver detalle
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

@@ -12,7 +12,7 @@ export function useReceta() {
     observaciones,
     medicamentos,
     firmado,
-    id_tipo_entrada = 1,
+    tipo_entrada = 'Consulta',
   }) => {
     setSaving(true)
     setError(null)
@@ -28,7 +28,7 @@ export function useReceta() {
           dosis: m.dosis?.trim() || null,
           indicaciones: m.indicaciones?.trim() || null,
         })),
-        p_id_tipo_entrada: id_tipo_entrada,
+        p_tipo_entrada: tipo_entrada,
       })
       if (rpcError) throw rpcError
       return true

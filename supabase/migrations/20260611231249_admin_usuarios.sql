@@ -95,7 +95,11 @@ BEGIN
 
   ELSIF p_tipo = 'PERSONAL' THEN
     INSERT INTO public.personal (id_cuenta, nombre, telefono, rol)
-    VALUES (p_cuenta_id, p_nombre, p_telefono, p_rol::rol);
+    VALUES (p_cuenta_id, p_nombre, p_telefono, p_rol::rol)
+    ON CONFLICT (id_cuenta) DO UPDATE SET
+      nombre   = EXCLUDED.nombre,
+      telefono = EXCLUDED.telefono,
+      rol      = EXCLUDED.rol;
 
   ELSE
     RAISE EXCEPTION 'Tipo de usuario inválido: %', p_tipo;

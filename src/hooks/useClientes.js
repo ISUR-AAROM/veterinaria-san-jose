@@ -25,26 +25,34 @@ export function useClientes() {
     const { data, error } = await query.order('nombre')
 
     if (error) {
+      console.error('[useClientes] Error al cargar clientes:', error.message)
       setError(error.message)
       setLoading(false)
       return
     }
 
-    const clientIds = (data || []).map((c) => c.id)
-    const { data: mascotasData } = await supabase
-      .from('mascota')
-      .select('id_cliente')
-      .eq('is_active', true)
-      .in('id_cliente', clientIds)
+    const clientesData = data || []
+    let countMap = {}
 
-    const countMap = {}
-    if (mascotasData) {
-      for (const m of mascotasData) {
-        countMap[m.id_cliente] = (countMap[m.id_cliente] || 0) + 1
+    if (clientesData.length > 0) {
+      const clientIds = clientesData.map((c) => c.id)
+      const { data: mascotasData, error: mascotasError } = await supabase
+        .from('mascota')
+        .select('id_cliente')
+        .eq('is_active', true)
+        .in('id_cliente', clientIds)
+
+      if (mascotasError) {
+        console.error('[useClientes] Error al contar mascotas:', mascotasError.message)
+      } else if (mascotasData) {
+        countMap = {}
+        for (const m of mascotasData) {
+          countMap[m.id_cliente] = (countMap[m.id_cliente] || 0) + 1
+        }
       }
     }
 
-    const clientsWithCount = (data || []).map((cliente) => ({
+    const clientsWithCount = clientesData.map((cliente) => ({
       ...cliente,
       mascotas_activas: countMap[cliente.id] || 0,
     }))

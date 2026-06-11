@@ -4,7 +4,7 @@ import { useClientes } from '../../hooks/useClientes'
 
 export function Clientes() {
   const navigate = useNavigate()
-  const { clientes, loading, buscar } = useClientes()
+  const { clientes, loading, error, buscar } = useClientes()
   const [busqueda, setBusqueda] = useState('')
 
   const handleSearch = useCallback((e) => {
@@ -41,6 +41,12 @@ export function Clientes() {
           />
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+          Error al cargar: {error}
+        </div>
+      )}
 
       <div className="w-full overflow-hidden rounded-xl border border-[#E8DDD0] bg-white shadow-sm">
         <table className="w-full">

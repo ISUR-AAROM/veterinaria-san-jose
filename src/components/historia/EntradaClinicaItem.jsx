@@ -17,7 +17,7 @@ export function EntradaClinicaItem({ entrada }) {
             {entrada.tipo_entrada?.nombre || 'Consulta'}
           </span>
           <span className="text-xs text-[#7A6555]">
-            {formatDate(entrada.created_at)}
+            {formatDate(entrada.fecha)}
           </span>
         </div>
         {entrada.diagnostico && (

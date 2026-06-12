@@ -9,14 +9,18 @@ export function AdminProvider({ children }) {
   const isMounted = useRef(false)
 
   const fetchPersonal = useCallback(async (userId) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('personal')
       .select('id, rol, nombre')
       .eq('id_cuenta', userId)
-      .single()
+      .maybeSingle()
 
     if (!isMounted.current) return
-    if (data) setPersonal(data)
+    if (error) {
+      console.error('Error al obtener personal:', error.message)
+    } else if (data) {
+      setPersonal(data)
+    }
     setLoading(false)
   }, [])
 

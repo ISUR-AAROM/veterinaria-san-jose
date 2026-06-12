@@ -16,7 +16,7 @@ export function useHistoriaClinica(idMascota) {
       .from('historia_clinica')
       .select('id')
       .eq('id_mascota', idMascota)
-      .single()
+      .maybeSingle()
 
     if (!hc) {
       setLoading(false)
@@ -27,11 +27,12 @@ export function useHistoriaClinica(idMascota) {
     const { data, error } = await supabase
       .from('entrada_historia_clinica')
       .select(`
-        id, diagnostico, observaciones, created_at,
+        id, diagnostico, observaciones, fecha, version,
         tipo_entrada ( id, nombre )
       `)
       .eq('id_historia_clinica', hc.id)
-      .order('created_at', { ascending: false })
+      .order('version', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: false })
 
     if (error) setError(error.message)
     else setEntradas(data || [])

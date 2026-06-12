@@ -1,38 +1,48 @@
-function formatDate(date) {
-  return date.toISOString().split('T')[0]
+function localDateStr(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
-function formatDisplay(date) {
-  const hoy = new Date()
-  const ayer = new Date(hoy)
-  ayer.setDate(ayer.getDate() - 1)
-  const manana = new Date(hoy)
-  manana.setDate(manana.getDate() + 1)
+function parseLocalDate(str) {
+  if (!str) return new Date()
+  const [y, m, d] = str.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
 
-  const opts = { weekday: 'long', day: 'numeric', month: 'long' }
-  if (formatDate(date) === formatDate(hoy)) return 'Hoy'
-  if (formatDate(date) === formatDate(manana)) return 'Mañana'
-  if (formatDate(date) === formatDate(ayer)) return 'Ayer'
-  return date.toLocaleDateString('es-PE', opts)
+function formatDisplay(dateStr) {
+  const hoy = localDateStr(new Date())
+  const ayerDate = new Date()
+  ayerDate.setDate(ayerDate.getDate() - 1)
+  const mananaDate = new Date()
+  mananaDate.setDate(mananaDate.getDate() + 1)
+
+  if (dateStr === hoy) return 'Hoy'
+  if (dateStr === localDateStr(mananaDate)) return 'Mañana'
+  if (dateStr === localDateStr(ayerDate)) return 'Ayer'
+  return parseLocalDate(dateStr).toLocaleDateString('es-PE', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
 }
 
 export function FiltroFecha({ fecha, onChange }) {
   const prevDay = () => {
-    const d = new Date(fecha)
+    const d = parseLocalDate(fecha)
     d.setDate(d.getDate() - 1)
-    onChange(formatDate(d))
+    onChange(localDateStr(d))
   }
 
   const nextDay = () => {
-    const d = new Date(fecha)
+    const d = parseLocalDate(fecha)
     d.setDate(d.getDate() + 1)
-    onChange(formatDate(d))
+    onChange(localDateStr(d))
   }
 
-  const hoy = () => onChange(formatDate(new Date()))
+  const hoy = () => onChange(localDateStr(new Date()))
 
-  const displayLabel = formatDisplay(new Date(fecha))
-  const isToday = formatDate(new Date()) === fecha
+  const displayLabel = formatDisplay(fecha)
+  const isToday = localDateStr(new Date()) === fecha
 
   return (
     <div className="flex items-center gap-3">

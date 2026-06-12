@@ -17,6 +17,7 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
     if (!monto || isNaN(monto) || parseFloat(monto) <= 0) e.monto = 'Ingresa un monto válido'
     setErrors(e)
     if (Object.keys(e).length > 0) return
+    if (typeof onConfirm !== 'function') return
     await onConfirm({ id_metodo_pago: idMetodoPago, monto: parseFloat(monto) })
   }
 
@@ -24,7 +25,7 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
     setIdMetodoPago('')
     setMonto(montoSugerido || '')
     setErrors({})
-    onClose()
+    if (typeof onClose === 'function') onClose()
   }
 
   return (
@@ -44,11 +45,11 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
           </div>
         </div>
 
-        {!loadingMetodos && (
+        {!loadingMetodos && (metodos || []).length > 0 && (
           <Select
             label="Método de pago"
             placeholder="Seleccionar método"
-            options={metodos.map((m) => ({ value: m.id, label: m.nombre }))}
+            options={(metodos || []).map((m) => ({ value: m.id, label: m.nombre }))}
             value={idMetodoPago}
             onChange={(e) => setIdMetodoPago(e.target.value)}
             error={errors.metodo}

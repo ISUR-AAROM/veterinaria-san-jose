@@ -33,7 +33,7 @@ export function usePago() {
         metodo_pago ( id, nombre )
       `)
       .eq('id_cita', idCita)
-      .single()
+      .maybeSingle()
     return data
   }, [])
 

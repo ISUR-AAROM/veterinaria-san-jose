@@ -20,11 +20,11 @@ export function useReceta() {
       const { error: rpcError } = await supabase.rpc('finalizar_atencion', {
         p_id_cita: id_cita,
         p_id_veterinario: id_veterinario,
-        p_diagnostico: diagnostico.trim(),
+        p_diagnostico: (diagnostico || '').trim(),
         p_observaciones: observaciones?.trim() || null,
-        p_firmado: firmado,
-        p_medicamentos: medicamentos.map((m) => ({
-          medicamento: m.nombre.trim(),
+        p_firmado: firmado ?? false,
+        p_medicamentos: (medicamentos || []).map((m) => ({
+          medicamento: (m.nombre || '').trim(),
           dosis: m.dosis?.trim() || null,
           indicaciones: m.indicaciones?.trim() || null,
         })),
@@ -40,17 +40,17 @@ export function useReceta() {
     }
   }, [])
 
-  async function getRecetaDeCita(idCita) {
+  const getRecetaDeCita = useCallback(async (idCita) => {
     const { data: receta } = await supabase
       .from('receta')
       .select(`
-        id, diagnostico, observaciones, firmado, created_at,
+        id, diagnostico, observaciones, firmado,
         receta_detalle ( id, medicamento, dosis, indicaciones )
       `)
       .eq('id_cita', idCita)
-      .single()
+      .maybeSingle()
     return receta
-  }
+  }, [])
 
   return { finalizarAtencion, getRecetaDeCita, saving, error }
 }

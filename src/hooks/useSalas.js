@@ -22,28 +22,26 @@ export function useSalas() {
 
   useEffect(() => { cargar() }, [cargar])
 
+  const sanitizarDatos = (datos) => ({
+    nombre: (datos.nombre || '').trim(),
+    capacidad: Math.max(1, parseInt(datos.capacidad, 10) || 1),
+    id_categoria: datos.id_categoria || null,
+  })
+
   const agregar = useCallback(async (datos) => {
     const { data, error } = await supabase
       .from('sala')
-      .insert({
-        nombre: datos.nombre.trim(),
-        capacidad: parseInt(datos.capacidad),
-        id_categoria: datos.id_categoria,
-      })
+      .insert(sanitizarDatos(datos))
       .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
       .single()
     if (error) throw error
-    setSalas((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+    setSalas((prev) => [...prev, data].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')))
   }, [])
 
   const actualizar = useCallback(async (id, datos) => {
     const { data, error } = await supabase
       .from('sala')
-      .update({
-        nombre: datos.nombre.trim(),
-        capacidad: parseInt(datos.capacidad),
-        id_categoria: datos.id_categoria,
-      })
+      .update(sanitizarDatos(datos))
       .eq('id', id)
       .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
       .single()

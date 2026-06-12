@@ -49,7 +49,9 @@ export function RecetaForm({ onFinalizar, saving, error }) {
     if (medicamentos.length === 0) e.medicamentos = 'Agrega al menos un medicamento'
     setErrors(e)
     if (Object.keys(e).length > 0) return
-    onFinalizar({ diagnostico, observaciones, medicamentos, firmado: firmada })
+    if (typeof onFinalizar === 'function') {
+      onFinalizar({ diagnostico, observaciones, medicamentos, firmado: firmada })
+    }
   }
 
   return (

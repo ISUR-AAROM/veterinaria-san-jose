@@ -31,10 +31,10 @@ export function HuecoCitaCard({ cita }) {
         {cita.mascota?.nombre || 'Mascota'}
       </p>
       <p className="text-xs text-[#7A6555] truncate">
-        {cita.cliente?.nombre} {cita.cliente?.apellido}
+        {cita.cliente?.nombre || ''} {cita.cliente?.apellido || ''}
       </p>
       <p className="text-xs text-[#7A6555] truncate mt-0.5">
-        {cita.servicio?.nombre || cita.hueco?.servicio?.nombre || ''}
+        {cita.hueco?.servicio?.nombre || ''}
       </p>
     </div>
   )

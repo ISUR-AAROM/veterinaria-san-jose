@@ -23,36 +23,42 @@ export function DetalleCita() {
   const [loading, setLoading] = useState(true)
   const [showPagoModal, setShowPagoModal] = useState(false)
   const [mostrandoAtencion, setMostrandoAtencion] = useState(false)
+  const [errorCarga, setErrorCarga] = useState(null)
 
   const { entradas, loading: loadingHistoria } = useHistoriaClinica(cita?.mascota?.id)
 
   const cargar = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('cita')
-      .select(`
-        id, estado, created_at,
-        hueco ( id, fecha, hora_inicio, hora_fin, sala ( id, nombre ), servicio ( id, nombre ) ),
-        mascota ( id, nombre ),
-        cliente ( id, nombre, apellido, telefono )
-      `)
-      .eq('id', id)
-      .single()
-    setCita(data)
+    try {
+      const { data, error } = await supabase
+        .from('cita')
+        .select(`
+          id, estado,
+          hueco!inner ( id, fecha, hora_inicio, hora_fin, sala ( id, nombre ), servicio ( id, nombre, precio ) ),
+          mascota ( id, nombre ),
+          cliente ( id, nombre, apellido, telefono )
+        `)
+        .eq('id', id)
+        .single()
 
-    const promises = []
-    if (data?.estado === 'EN_ESPERA' || data?.estado === 'FINALIZADA') {
-      promises.push(
-        getPagoDeCita(data.id).then((pago) => { if (pago) setPagoInfo(pago) })
-      )
-    }
-    if (data?.estado === 'FINALIZADA') {
-      promises.push(
-        getRecetaDeCita(data.id).then((receta) => { if (receta) setRecetaInfo(receta) })
-      )
-    }
-    await Promise.all(promises)
+      if (error) throw error
+      setCita(data)
 
+      const [pago, receta] = await Promise.all([
+        (data?.estado === 'EN_ESPERA' || data?.estado === 'FINALIZADA')
+          ? getPagoDeCita(data.id)
+          : Promise.resolve(null),
+        data?.estado === 'FINALIZADA'
+          ? getRecetaDeCita(data.id)
+          : Promise.resolve(null),
+      ])
+
+      if (pago) setPagoInfo(pago)
+      if (receta) setRecetaInfo(receta)
+    } catch (err) {
+      console.error('Error al cargar cita:', err)
+      if (!cita) setErrorCarga(err.message || 'Error al cargar la cita')
+    }
     setLoading(false)
   }, [id, getPagoDeCita, getRecetaDeCita])
 
@@ -62,7 +68,7 @@ export function DetalleCita() {
 
   const handleConfirmarPago = async ({ id_metodo_pago, monto }) => {
     const ok = await registrarPago({
-      id_cita: parseInt(id),
+      id_cita: id,
       id_metodo_pago,
       monto,
       confirmado_por: personal?.id,
@@ -77,7 +83,7 @@ export function DetalleCita() {
 
   const handleFinalizarAtencion = async ({ diagnostico, observaciones, medicamentos, firmado }) => {
     const ok = await finalizarAtencion({
-      id_cita: parseInt(id),
+      id_cita: id,
       id_veterinario: personal?.id,
       diagnostico,
       observaciones,
@@ -93,7 +99,11 @@ export function DetalleCita() {
   const handleCancelarCita = async () => {
     if (!window.confirm('¿Estás seguro? Esta acción no se puede deshacer')) return
     const { error } = await supabase.rpc('cancelar_cita', { p_id_cita: id })
-    if (!error) navigate('/admin/agenda')
+    if (error) {
+      alert('Error al cancelar cita: ' + error.message)
+      return
+    }
+    navigate('/admin/agenda')
   }
 
   if (loading) {
@@ -109,6 +119,9 @@ export function DetalleCita() {
       <div className="animate-fade-in-up">
         <div className="bg-white rounded-2xl border border-[#E8DDD0] p-14 flex flex-col items-center justify-center text-center">
           <h2 className="text-lg font-semibold text-[#2C1A0E]">Cita no encontrada</h2>
+          {errorCarga && (
+            <p className="text-sm text-red-600 mt-2">{errorCarga}</p>
+          )}
         </div>
       </div>
     )
@@ -191,7 +204,7 @@ export function DetalleCita() {
         open={showPagoModal}
         onClose={() => setShowPagoModal(false)}
         onConfirm={handleConfirmarPago}
-        montoSugerido={cita?.servicio?.precio || cita?.hueco?.servicio?.precio || ''}
+        montoSugerido={cita?.hueco?.servicio?.precio || ''}
         saving={savingPago}
         error={errorPago}
       />

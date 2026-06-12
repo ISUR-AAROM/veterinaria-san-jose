@@ -13,7 +13,7 @@ export function ColumnaAgenda({ sala, citas, huecosSinCita }) {
   return (
     <div className="bg-[#FAF7F2] rounded-xl border border-[#E8DDD0] overflow-hidden min-w-[260px] flex-1">
       <div className="bg-white border-b border-[#E8DDD0] px-4 py-3">
-        <h3 className="text-sm font-semibold text-[#2C1A0E]">{sala.nombre}</h3>
+        <h3 className="text-sm font-semibold text-[#2C1A0E]">{sala?.nombre || 'Sala sin nombre'}</h3>
       </div>
       <div className="p-3 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
         {citas.length === 0 && huecosSinCita?.length === 0 ? (

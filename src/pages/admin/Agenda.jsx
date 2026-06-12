@@ -5,13 +5,16 @@ import { useAgenda } from '../../hooks/useAgenda'
 import { useSalas } from '../../hooks/useSalas'
 
 function formatDate(d) {
-  return d.toISOString().split('T')[0]
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 export function Agenda() {
   const [fecha, setFecha] = useState(() => formatDate(new Date()))
-  const { citas, loading: loadingCitas } = useAgenda(fecha)
-  const { salas, loading: loadingSalas } = useSalas()
+  const { citas, loading: loadingCitas, error } = useAgenda(fecha)
+  const { salas, loading: loadingSalas, error: errorSalas } = useSalas()
   const [busqueda, setBusqueda] = useState('')
 
   const citasFiltradas = useMemo(() => {
@@ -69,6 +72,16 @@ export function Agenda() {
         </div>
       </div>
 
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+          Error al cargar citas: {error}
+        </div>
+      )}
+      {errorSalas && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+          Error al cargar salas: {errorSalas}
+        </div>
+      )}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <p className="text-sm text-[#7A6555]">Cargando agenda...</p>

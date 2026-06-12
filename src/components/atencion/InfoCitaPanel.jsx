@@ -32,7 +32,7 @@ export function InfoCitaPanel({
       <div>
         <InfoRow label="Cliente" value={`${cita?.cliente?.nombre || ''} ${cita?.cliente?.apellido || ''}`} />
         <InfoRow label="Mascota" value={cita?.mascota?.nombre} />
-        <InfoRow label="Servicio" value={cita?.servicio?.nombre || cita?.hueco?.servicio?.nombre} />
+        <InfoRow label="Servicio" value={cita?.hueco?.servicio?.nombre} />
         <InfoRow label="Sala" value={cita?.hueco?.sala?.nombre} />
         <InfoRow label="Hora" value={`${formatHora(cita?.hueco?.hora_inicio)} - ${formatHora(cita?.hueco?.hora_fin)}`} />
         <InfoRow label="Teléfono" value={cita?.cliente?.telefono} />
@@ -61,7 +61,7 @@ export function InfoCitaPanel({
           {pagoInfo && (
             <div className="bg-[#FAF7F2] rounded-lg p-3 space-y-1.5">
               <p className="text-xs font-medium text-[#7A6555] uppercase tracking-wide">Pago registrado</p>
-              <p className="text-sm font-semibold text-[#2C1A0E]">S/ {parseFloat(pagoInfo.monto).toFixed(2)}</p>
+              <p className="text-sm font-semibold text-[#2C1A0E]">S/ {Number(pagoInfo.monto || 0).toFixed(2)}</p>
               <p className="text-xs text-[#7A6555]">{pagoInfo.metodo_pago?.nombre}</p>
             </div>
           )}

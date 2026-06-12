@@ -8,9 +8,10 @@ const variants = {
 }
 
 export function Button({ variant = 'primary', className = '', children, ...props }) {
+  const variantClass = variants[variant] || variants.primary
   return (
     <button
-      className={`font-medium text-sm px-4 py-2 rounded-lg transition-colors ${variants[variant]} ${className}`}
+      className={`font-medium text-sm px-4 py-2 rounded-lg transition-colors ${variantClass} ${className}`}
       {...props}
     >
       {children}

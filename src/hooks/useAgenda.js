@@ -12,20 +12,24 @@ export function useAgenda(fecha) {
     const { data, error } = await supabase
       .from('cita')
       .select(`
-        id, estado, created_at,
+        id, estado,
         hueco!inner (
           id, fecha, hora_inicio, hora_fin,
-          sala!inner ( id, nombre )
+          sala!inner ( id, nombre ),
+          servicio ( id, nombre )
         ),
         mascota ( id, nombre ),
-        cliente ( id, nombre, apellido, telefono ),
-        servicio!inner ( id, nombre )
+        cliente ( id, nombre, apellido, telefono )
       `)
       .eq('hueco.fecha', fecha)
       .in('estado', ['PROGRAMADA', 'EN_ESPERA', 'FINALIZADA'])
-      .order('hueco(hora_inicio)', { ascending: true })
-    if (error) setError(error.message)
-    else setCitas(data || [])
+      .order('hora_inicio', { foreignTable: 'hueco', ascending: true })
+    if (error) {
+      setError(error.message)
+      setCitas([])
+    } else {
+      setCitas(data || [])
+    }
     setLoading(false)
   }, [fecha])
 

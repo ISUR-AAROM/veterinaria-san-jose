@@ -3,7 +3,6 @@ import { FiltroFecha } from '../../components/agenda/FiltroFecha'
 import { ColumnaAgenda } from '../../components/agenda/ColumnaAgenda'
 import { useAgenda } from '../../hooks/useAgenda'
 import { useSalas } from '../../hooks/useSalas'
-import { BarraBusqueda } from '../../components/ui/BarraBusqueda'
 
 function formatDate(d) {
   return d.toISOString().split('T')[0]

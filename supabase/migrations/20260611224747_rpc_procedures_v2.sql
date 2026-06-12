@@ -182,11 +182,8 @@ BEGIN
 
   INSERT INTO public.historia_clinica (id_mascota)
   VALUES (v_id_mascota)
-  ON CONFLICT (id_mascota) DO NOTHING;
-
-  SELECT id INTO v_hc_id
-  FROM public.historia_clinica
-  WHERE id_mascota = v_id_mascota;
+  ON CONFLICT (id_mascota) DO UPDATE SET ultima_actualizacion = CURRENT_DATE
+  RETURNING id INTO v_hc_id;
 
   SELECT id INTO v_id_tipo
   FROM public.tipo_entrada

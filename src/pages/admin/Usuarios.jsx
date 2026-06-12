@@ -4,6 +4,7 @@ import { useTipoDocumento } from '../../hooks/useTipoDocumento'
 import { UsuarioModal } from '../../components/usuarios/UsuarioModal'
 import { BarraBusqueda } from '../../components/ui/BarraBusqueda'
 import { CatalogoLayout } from '../../components/catalogos/CatalogoLayout'
+import { ConfirmModal } from '../../components/ui/ConfirmModal'
 
 const ROL_COLORS = {
   ADMINISTRADOR: 'bg-purple-100 text-purple-700',
@@ -20,12 +21,13 @@ function BadgeRol({ rol }) {
 }
 
 export function Usuarios() {
-  const { usuarios, loading, saving, error, crear, actualizar, toggleEstado, recargar, USUARIO_VACIO } = useUsuarios()
+  const { usuarios, loading, saving, error, crear, actualizar, toggleEstado, USUARIO_VACIO } = useUsuarios()
   const { tipos: tiposDocumento } = useTipoDocumento()
   const [modal, setModal] = useState({ open: false, editando: null })
   const [form, setForm] = useState(USUARIO_VACIO)
   const [busqueda, setBusqueda] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
+  const [confirmToggle, setConfirmToggle] = useState(null)
 
   const filtrados = useMemo(() => {
     let data = usuarios
@@ -43,10 +45,20 @@ export function Usuarios() {
     return data
   }, [usuarios, busqueda, filtroTipo])
 
+  const { activos, inactivos } = useMemo(() => {
+    const activos = []
+    const inactivos = []
+    for (const u of filtrados) {
+      if (u.is_active) activos.push(u)
+      else inactivos.push(u)
+    }
+    return { activos, inactivos }
+  }, [filtrados])
+
   const abrirCrear = useCallback(() => {
     setForm(USUARIO_VACIO)
     setModal({ open: true, editando: null })
-  }, [])
+  }, [USUARIO_VACIO])
 
   const abrirEditar = useCallback((usuario) => {
     setForm({
@@ -74,13 +86,14 @@ export function Usuarios() {
   }, [modal.editando, form, actualizar, crear])
 
   const handleToggle = useCallback(async (usuario) => {
-    const accion = usuario.is_active ? 'desactivar' : 'activar'
-    if (!window.confirm(`¿Estás seguro de ${accion} a ${usuario.nombre}?`)) return
-    await toggleEstado(usuario.cuenta_id)
-  }, [toggleEstado])
+    setConfirmToggle(usuario)
+  }, [])
 
-  const activos = useMemo(() => filtrados.filter((u) => u.is_active), [filtrados])
-  const inactivos = useMemo(() => filtrados.filter((u) => !u.is_active), [filtrados])
+  const confirmarToggle = useCallback(async () => {
+    if (!confirmToggle) return
+    await toggleEstado(confirmToggle.cuenta_id)
+    setConfirmToggle(null)
+  }, [confirmToggle, toggleEstado])
 
   return (
     <div className="animate-fade-in-up">
@@ -131,6 +144,16 @@ export function Usuarios() {
         cargando={saving}
         tiposDocumento={tiposDocumento}
         editando={modal.editando}
+      />
+
+      <ConfirmModal
+        open={!!confirmToggle}
+        onClose={() => setConfirmToggle(null)}
+        onConfirm={confirmarToggle}
+        titulo={confirmToggle?.is_active ? 'Desactivar usuario' : 'Activar usuario'}
+        mensaje={`¿Estás seguro de ${confirmToggle?.is_active ? 'desactivar' : 'activar'} a ${confirmToggle?.nombre}? Esta acción no se puede deshacer.`}
+        confirmarTexto={confirmToggle?.is_active ? 'Desactivar' : 'Activar'}
+        variant={confirmToggle?.is_active ? 'destructive' : 'primary'}
       />
     </div>
   )

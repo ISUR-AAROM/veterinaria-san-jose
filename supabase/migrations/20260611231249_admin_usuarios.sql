@@ -4,7 +4,6 @@
 -- ============================================================
 
 -- Verifica que el usuario autenticado sea administrador
--- Reutiliza la función existente get_rol()
 CREATE OR REPLACE FUNCTION public.es_administrador()
 RETURNS boolean
 LANGUAGE sql
@@ -12,7 +11,10 @@ SECURITY DEFINER
 SET search_path = public
 STABLE
 AS $$
-  SELECT get_rol() = 'ADMINISTRADOR';
+  SELECT EXISTS (
+    SELECT 1 FROM public.personal
+    WHERE id_cuenta = auth.uid() AND rol = 'ADMINISTRADOR'
+  );
 $$;
 
 

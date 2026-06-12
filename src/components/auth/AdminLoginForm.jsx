@@ -28,6 +28,19 @@ export function AdminLoginForm() {
         return
       }
 
+      const { data: cuenta } = await supabase
+        .from('cuenta')
+        .select('is_active')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (!cuenta?.is_active) {
+        await supabase.auth.signOut()
+        setError('Tu cuenta ha sido desactivada. Contacta al administrador.')
+        setTimeout(() => setError(''), 8000)
+        return
+      }
+
       const { data: personal, error: personalError } = await supabase
         .from('personal')
         .select('id, rol, nombre')

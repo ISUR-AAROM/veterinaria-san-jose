@@ -8,6 +8,7 @@ import { RutaCliente } from './components/layout/RutaCliente'
 import { RutaAdmin } from './components/layout/RutaAdmin'
 import { RutaRol } from './components/layout/RutaRol'
 import { AdminProvider } from './context/AdminContext'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 
 const Landing = lazy(() => import('./pages/publico/Landing').then((m) => ({ default: m.Landing })))
 const Login = lazy(() => import('./pages/publico/Login').then((m) => ({ default: m.Login })))
@@ -37,9 +38,11 @@ const loadingFallback = (
 )
 
 const withSuspense = (element) => (
-  <Suspense fallback={loadingFallback}>
-    {element}
-  </Suspense>
+  <ErrorBoundary>
+    <Suspense fallback={loadingFallback}>
+      {element}
+    </Suspense>
+  </ErrorBoundary>
 )
 
 export const router = createBrowserRouter([

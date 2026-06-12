@@ -97,7 +97,7 @@ export function SidebarAdmin() {
 
     if (can('catalogos')) {
       items.push({
-        label: 'Catalogos',
+        label: 'Catálogos',
         children: [
           ...(can('personal.gestionar')
             ? [{

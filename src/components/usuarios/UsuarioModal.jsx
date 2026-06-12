@@ -1,27 +1,30 @@
+import { useCallback, useMemo } from 'react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 
-export function UsuarioModal({ open, onClose, titulo, form, setForm, onGuardar, cargando, tiposDocumento, editando }) {
-  if (!open) return null
+const ROLES = [
+  { value: 'ADMINISTRADOR', label: 'Administrador' },
+  { value: 'VETERINARIO', label: 'Veterinario' },
+  { value: 'ASISTENTE', label: 'Asistente' },
+]
 
-  const handleChange = (field) => (e) => {
+export function UsuarioModal({ open, onClose, titulo, form, setForm, onGuardar, cargando, tiposDocumento, editando }) {
+  const handleChange = useCallback((field) => (e) => {
     const val = e.target.value
     setForm((prev) => ({ ...prev, [field]: val }))
-  }
+  }, [setForm])
+
+  const tiposDoc = useMemo(() =>
+    (tiposDocumento || []).map((td) => ({
+      value: td.id,
+      label: td.nombre,
+    })),
+  [tiposDocumento])
+
+  if (!open) return null
 
   const esCliente = form.tipo === 'CLIENTE'
-
-  const roles = [
-    { value: 'ADMINISTRADOR', label: 'Administrador' },
-    { value: 'VETERINARIO', label: 'Veterinario' },
-    { value: 'ASISTENTE', label: 'Asistente' },
-  ]
-
-  const tiposDoc = (tiposDocumento || []).map((td) => ({
-    value: td.id,
-    label: td.nombre,
-  }))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -103,7 +106,7 @@ export function UsuarioModal({ open, onClose, titulo, form, setForm, onGuardar, 
                     label="Rol"
                     value={form.rol}
                     onChange={handleChange('rol')}
-                    options={roles}
+                    options={ROLES}
                   />
                 )}
               </div>

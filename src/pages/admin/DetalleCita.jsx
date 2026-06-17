@@ -9,6 +9,7 @@ import { HistoriaClinicaPanel } from '../../components/atencion/HistoriaClinicaP
 import { usePago } from '../../hooks/usePago'
 import { useReceta } from '../../hooks/useReceta'
 import { useHistoriaClinica } from '../../hooks/useHistoriaClinica'
+import { useGenerarPdfReceta } from '../../hooks/useGenerarPdfReceta'
 
 export function DetalleCita() {
   const { id } = useParams()
@@ -16,6 +17,7 @@ export function DetalleCita() {
   const { personal } = useAdmin()
   const { registrarPago, getPagoDeCita, saving: savingPago, error: errorPago } = usePago()
   const { finalizarAtencion, getRecetaDeCita, saving: savingReceta, error: errorReceta } = useReceta()
+  const { generarPdf, generando: generandoPdf, error: errorPdf } = useGenerarPdfReceta()
 
   const [cita, setCita] = useState(null)
   const [pagoInfo, setPagoInfo] = useState(null)
@@ -35,7 +37,7 @@ export function DetalleCita() {
         .select(`
           id, estado,
           hueco!inner ( id, fecha, hora_inicio, hora_fin, sala ( id, nombre ), servicio ( id, nombre, precio ) ),
-          mascota ( id, nombre ),
+          mascota ( id, nombre, especie_mascota ( nombre ) ),
           cliente ( id, nombre, apellido, telefono )
         `)
         .eq('id', id)
@@ -106,6 +108,10 @@ export function DetalleCita() {
     navigate('/admin/agenda')
   }
 
+  const handleGenerarPdf = useCallback(() => {
+    generarPdf({ cita, recetaInfo, personal })
+  }, [cita, recetaInfo, personal, generarPdf])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -149,6 +155,9 @@ export function DetalleCita() {
             onRegistrarPago={handleRegistrarPago}
             onIniciarAtencion={handleIniciarAtencion}
             onCancelarCita={handleCancelarCita}
+            onGenerarPdf={handleGenerarPdf}
+            generando={generandoPdf}
+            errorPdf={errorPdf}
           />
 
           {(mostrandoAtencion || cita.estado === 'FINALIZADA') && (

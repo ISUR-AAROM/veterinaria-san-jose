@@ -1,6 +1,4 @@
 import { useState, useCallback } from 'react'
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
 
 function formatearFecha(fechaStr) {
   if (!fechaStr) return '—'
@@ -111,10 +109,11 @@ export function useGenerarPdfReceta() {
   const generarPdf = useCallback(async ({ cita, recetaInfo, personal }) => {
     setGenerando(true)
     setError(null)
+    let container = null
     try {
       if (!recetaInfo) throw new Error('No hay receta asociada a esta cita')
 
-      const container = document.createElement('div')
+      container = document.createElement('div')
       container.style.cssText =
         'position:fixed;left:-9999px;top:0;width:640px;background:white;z-index:-1;'
       container.innerHTML = buildRecetaHtml({ cita, recetaInfo, personal })
@@ -131,7 +130,12 @@ export function useGenerarPdfReceta() {
         )
       )
 
-      const canvas = await html2canvas(container, {
+      const [html2canvas, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ])
+
+      const canvas = await html2canvas.default(container, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
@@ -140,8 +144,6 @@ export function useGenerarPdfReceta() {
           doc.body.style.margin = '0'
         },
       })
-
-      document.body.removeChild(container)
 
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
@@ -173,6 +175,9 @@ export function useGenerarPdfReceta() {
     } catch (err) {
       setError(err.message || 'Error al generar el PDF')
     } finally {
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container)
+      }
       setGenerando(false)
     }
   }, [])

@@ -8,7 +8,11 @@ function validar(d) {
   const e = {}
   if (!d.nombre.trim()) e.nombre = 'Campo obligatorio'
   if (!d.id_especie) e.id_especie = 'Selecciona una especie'
-  if (!d.fecha_nacimiento) e.fecha_nacimiento = 'Campo obligatorio'
+  if (!d.fecha_nacimiento) {
+    e.fecha_nacimiento = 'Campo obligatorio'
+  } else if (d.fecha_nacimiento > new Date().toISOString().split('T')[0]) {
+    e.fecha_nacimiento = 'La fecha no puede ser futura'
+  }
   return e
 }
 

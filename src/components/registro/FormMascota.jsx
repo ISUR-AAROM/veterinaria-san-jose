@@ -5,6 +5,8 @@ import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
 import { SelectRazaFiltrada } from './SelectRazaFiltrada'
 
+const hoyISO = () => new Date().toISOString().split('T')[0]
+
 export function FormMascota({ data, onChange, onSubmit, errors, submitLabel = 'Finalizar registro' }) {
   const { especies } = useEspecies()
 
@@ -37,6 +39,7 @@ export function FormMascota({ data, onChange, onSubmit, errors, submitLabel = 'F
       <Input
         label="Fecha de nacimiento"
         type="date"
+        max={hoyISO()}
         value={data.fecha_nacimiento}
         onChange={handleChange('fecha_nacimiento')}
         error={errors.fecha_nacimiento}

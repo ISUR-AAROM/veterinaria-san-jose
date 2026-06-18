@@ -41,7 +41,11 @@ function validarMascota(d) {
   const e = {}
   if (!d.nombre.trim()) e.nombre = 'Campo obligatorio'
   if (!d.id_especie) e.id_especie = 'Selecciona una especie'
-  if (!d.fecha_nacimiento) e.fecha_nacimiento = 'Campo obligatorio'
+  if (!d.fecha_nacimiento) {
+    e.fecha_nacimiento = 'Campo obligatorio'
+  } else if (d.fecha_nacimiento > new Date().toISOString().split('T')[0]) {
+    e.fecha_nacimiento = 'La fecha no puede ser futura'
+  }
   return e
 }
 
@@ -53,7 +57,7 @@ export function RegistroForm() {
   const [errors, setErrors] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
 
-  const { ref, isVisible } = useReveal()
+  const ref = useReveal('animate-fade-in-up')
 
   const handleSiguiente = (e) => {
     e.preventDefault()
@@ -107,7 +111,6 @@ export function RegistroForm() {
       navigate('/cliente/mascotas')
     } catch {
       setErrorGeneral('Error inesperado. Intenta de nuevo.')
-      setTimeout(() => setErrorGeneral(''), 8000)
     }
   }
 
@@ -116,7 +119,7 @@ export function RegistroForm() {
       <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full bg-[#C2570F]/[0.04] blur-3xl" />
       <div className="absolute bottom-10 right-1/4 w-80 h-80 rounded-full bg-[#4A7C59]/[0.04] blur-3xl" />
 
-      <div ref={ref} className={`w-full max-w-lg transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
+      <div ref={ref} className="w-full max-w-lg">
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-6">
             <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">

@@ -58,8 +58,9 @@ export function Especies() {
   }
 
   const guardar = async () => {
+    // Validación local: campo vacío
     if (!form.nombre.trim()) {
-      setErrors({ nombre: 'Requerido' })
+      setErrors({ nombre: 'El nombre es requerido' })
       return
     }
     setSaving(true)
@@ -70,7 +71,10 @@ export function Especies() {
         await agregar(form)
       }
       setModal({ open: false, editando: null })
-    } catch { /* error propagado */ }
+    } catch (err) {
+      // Muestra el error de duplicado (u otro) directamente en el campo
+      setErrors({ nombre: err.message || 'Error al guardar' })
+    }
     setSaving(false)
   }
 
@@ -86,14 +90,24 @@ export function Especies() {
 
   const guardarRaza = async () => {
     if (!razaNombre.trim()) {
-      setRazaError('Requerido')
+      setRazaError('El nombre es requerido')
+      return
+    }
+    // Verificar duplicado en razas de la especie expandida
+    const yaExiste = razas.some(
+      (r) => r.nombre.trim().toLowerCase() === razaNombre.trim().toLowerCase()
+    )
+    if (yaExiste) {
+      setRazaError(`Ya existe una raza llamada "${razaNombre.trim()}" en esta especie`)
       return
     }
     setSavingRaza(true)
     try {
       await agregarRaza(razaNombre)
       setModalRaza(false)
-    } catch { /* error propagado */ }
+    } catch (err) {
+      setRazaError(err.message || 'Error al guardar')
+    }
     setSavingRaza(false)
   }
 
@@ -207,6 +221,7 @@ export function Especies() {
         </table>
       </div>
 
+      {/* Modal especie */}
       <CatalogoModal
         open={modal.open}
         onClose={() => setModal({ open: false, editando: null })}
@@ -214,9 +229,19 @@ export function Especies() {
         onGuardar={guardar}
         cargando={saving}
       >
-        <Input label="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} error={errors.nombre} placeholder="Ej: Canino" />
+        <Input
+          label="Nombre"
+          value={form.nombre}
+          onChange={(e) => {
+            setForm({ ...form, nombre: e.target.value })
+            setErrors({}) // limpiar error al escribir
+          }}
+          error={errors.nombre}
+          placeholder="Ej: Canino"
+        />
       </CatalogoModal>
 
+      {/* Modal raza */}
       <CatalogoModal
         open={modalRaza}
         onClose={() => setModalRaza(false)}
@@ -225,7 +250,16 @@ export function Especies() {
         cargando={savingRaza}
         botonTexto="Agregar"
       >
-        <Input label="Nombre" value={razaNombre} onChange={(e) => setRazaNombre(e.target.value)} error={razaError} placeholder="Ej: Labrador Retriever" />
+        <Input
+          label="Nombre"
+          value={razaNombre}
+          onChange={(e) => {
+            setRazaNombre(e.target.value)
+            setRazaError('') // limpiar error al escribir
+          }}
+          error={razaError}
+          placeholder="Ej: Labrador Retriever"
+        />
       </CatalogoModal>
     </CatalogoLayout>
   )

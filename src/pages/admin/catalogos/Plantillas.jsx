@@ -124,7 +124,17 @@ export function Plantillas() {
     setSaving(false)
   }
 
-  const handleChange = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
+  const handleChange = (field) => (e) => {
+    const val = e.target.value
+    setForm((prev) => {
+      const next = { ...prev, [field]: val }
+      if (field === 'id_servicio') {
+        const s = servicios.find((sv) => sv.id === val)
+        if (s?.duracion_minutos) next.intervalo_minutos = String(s.duracion_minutos)
+      }
+      return next
+    })
+  }
 
   return (
     <CatalogoLayout

@@ -66,6 +66,11 @@ export function InfoCitaPanel({
               <p className="text-xs font-medium text-[#7A6555] uppercase tracking-wide">Pago registrado</p>
               <p className="text-sm font-semibold text-[#2C1A0E]">S/ {Number(pagoInfo.monto || 0).toFixed(2)}</p>
               <p className="text-xs text-[#7A6555]">{pagoInfo.metodo_pago?.nombre}</p>
+              {cita?.hueco?.servicio?.precio && Number(pagoInfo.monto) > Number(cita.hueco.servicio.precio) && (
+                <p className="text-xs font-medium text-green-700">
+                  Vuelto: S/ {(Number(pagoInfo.monto) - Number(cita.hueco.servicio.precio)).toFixed(2)}
+                </p>
+              )}
             </div>
           )}
           {can('atencion.iniciar') && (

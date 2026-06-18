@@ -74,6 +74,19 @@ export function RegistroForm() {
 
     setErrorGeneral('')
 
+    const { data: docExistente } = await supabase
+      .from('cliente')
+      .select('id')
+      .eq('id_tipo_documento', cliente.id_tipo_documento)
+      .eq('numero_documento', cliente.numero_documento.trim())
+      .maybeSingle()
+
+    if (docExistente) {
+      setErrorGeneral('Ya existe un cliente registrado con ese documento de identidad')
+      setTimeout(() => setErrorGeneral(''), 8000)
+      return
+    }
+
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cliente.email,

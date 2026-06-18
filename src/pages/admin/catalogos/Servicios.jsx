@@ -93,6 +93,16 @@ export function Servicios() {
     const e = validar(form)
     setErrors(e)
     if (Object.keys(e).length > 0) return
+
+    const existe = servicios.some(s =>
+      s.nombre.toLowerCase().trim() === form.nombre.toLowerCase().trim() &&
+      (!modal.editando || s.id !== modal.editando.id)
+    )
+    if (existe) {
+      setErrors({ nombre: 'Ya existe un servicio con ese nombre' })
+      return
+    }
+
     setSaving(true)
     try {
       if (modal.editando) {

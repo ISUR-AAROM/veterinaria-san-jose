@@ -34,7 +34,10 @@ export function useSalas() {
       .insert(sanitizarDatos(datos))
       .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe una sala con ese nombre')
+      throw error
+    }
     setSalas((prev) => [...prev, data].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')))
   }, [])
 
@@ -45,7 +48,10 @@ export function useSalas() {
       .eq('id', id)
       .select(`id, nombre, capacidad, is_active, categoria_sala ( id, nombre )`)
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe una sala con ese nombre')
+      throw error
+    }
     setSalas((prev) => prev.map((s) => (s.id === id ? data : s)))
   }, [])
 

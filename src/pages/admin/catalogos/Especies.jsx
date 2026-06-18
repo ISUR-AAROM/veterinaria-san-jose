@@ -58,11 +58,20 @@ export function Especies() {
   }
 
   const guardar = async () => {
-    // Validación local: campo vacío
     if (!form.nombre.trim()) {
       setErrors({ nombre: 'El nombre es requerido' })
       return
     }
+
+    const yaExiste = especies.some(e =>
+      e.nombre.toLowerCase().trim() === form.nombre.toLowerCase().trim() &&
+      (!modal.editando || e.id !== modal.editando.id)
+    )
+    if (yaExiste) {
+      setErrors({ nombre: 'Ya existe una especie con ese nombre' })
+      return
+    }
+
     setSaving(true)
     try {
       if (modal.editando) {

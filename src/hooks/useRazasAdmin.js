@@ -31,7 +31,10 @@ export function useRazasAdmin(idEspecie) {
       .insert({ nombre: nombre.trim(), id_especie: idEspecie })
       .select()
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe una raza con ese nombre en esta especie')
+      throw error
+    }
     setRazas((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
   }, [idEspecie])
 

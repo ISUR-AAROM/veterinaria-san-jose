@@ -34,7 +34,10 @@ export function useServiciosAll() {
       })
       .select(`id, nombre, descripcion, duracion_minutos, precio, is_active, categoria_sala ( id, nombre )`)
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe un servicio con ese nombre')
+      throw error
+    }
     setServicios((prev) => [...prev, data].sort((a, b) => a.nombre.localeCompare(b.nombre)))
   }, [])
 
@@ -51,7 +54,10 @@ export function useServiciosAll() {
       .eq('id', id)
       .select(`id, nombre, descripcion, duracion_minutos, precio, is_active, categoria_sala ( id, nombre )`)
       .single()
-    if (error) throw error
+    if (error) {
+      if (error.code === '23505') throw new Error('Ya existe un servicio con ese nombre')
+      throw error
+    }
     setServicios((prev) => prev.map((s) => (s.id === id ? data : s)))
   }, [])
 

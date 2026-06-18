@@ -80,6 +80,16 @@ export function Salas() {
     const e = validar(form)
     setErrors(e)
     if (Object.keys(e).length > 0) return
+
+    const existe = salas.some(s =>
+      s.nombre.toLowerCase().trim() === form.nombre.toLowerCase().trim() &&
+      (!modal.editando || s.id !== modal.editando.id)
+    )
+    if (existe) {
+      setErrors({ nombre: 'Ya existe una sala con ese nombre' })
+      return
+    }
+
     setSaving(true)
     try {
       if (modal.editando) {

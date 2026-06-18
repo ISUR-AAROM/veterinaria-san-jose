@@ -1,0 +1,60 @@
+import { Badge } from '../ui/Badge'
+
+function formatFecha(fecha) {
+  if (!fecha) return '--'
+  const d = new Date(fecha + 'T00:00:00')
+  return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function formatHora(hora) {
+  if (!hora) return '--:--'
+  return hora.slice(0, 5)
+}
+
+function puedeCancelar(estado, fechaHueco) {
+  if (estado !== 'PROGRAMADA') return false
+  const hoy = new Date()
+  const citaFecha = new Date(fechaHueco + 'T00:00:00')
+  const diffMs = citaFecha.getTime() - hoy.getTime()
+  const diffHoras = diffMs / (1000 * 60 * 60)
+  return diffHoras >= 48
+}
+
+export function CitaCard({ cita, onCancel }) {
+  const hueco = cita?.hueco
+  const mascota = cita?.mascota
+
+  return (
+    <div className="bg-white border border-[#E8DDD0] rounded-lg p-4 hover:shadow-sm transition-shadow duration-200">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <p className="text-sm font-semibold text-[#C2570F]">
+            {formatFecha(hueco?.fecha)} — {formatHora(hueco?.hora_inicio)} a {formatHora(hueco?.hora_fin)}
+          </p>
+        </div>
+        <Badge estado={cita?.estado} />
+      </div>
+
+      <div className="space-y-1 mb-3">
+        <p className="text-sm font-medium text-[#2C1A0E]">
+          {mascota?.nombre || 'Mascota'}
+        </p>
+        <p className="text-xs text-[#7A6555]">
+          {hueco?.servicio?.nombre || ''}
+        </p>
+        <p className="text-xs text-[#7A6555]">
+          Sala: {hueco?.sala?.nombre || ''}
+        </p>
+      </div>
+
+      {puedeCancelar(cita.estado, hueco?.fecha) && onCancel && (
+        <button
+          onClick={() => onCancel(cita)}
+          className="text-xs font-medium text-[#B91C1C] hover:text-[#991B1B] transition-colors"
+        >
+          Cancelar cita
+        </button>
+      )}
+    </div>
+  )
+}

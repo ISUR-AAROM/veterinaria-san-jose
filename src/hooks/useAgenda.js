@@ -1,14 +1,19 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
+const POLL_INTERVAL_MS = 20000
+
 export function useAgenda(fecha) {
   const [citas, setCitas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [connected, setConnected] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(null)
   const channelRef = useRef(null)
+  const pollRef = useRef(null)
 
-  const cargar = useCallback(async () => {
-    setLoading(true)
+  const cargar = useCallback(async (opts) => {
+    if (opts?.showLoading) setLoading(true)
     const { data, error } = await supabase
       .from('cita')
       .select(`
@@ -23,18 +28,18 @@ export function useAgenda(fecha) {
       `)
       .eq('hueco.fecha', fecha)
       .in('estado', ['PROGRAMADA', 'EN_ESPERA', 'FINALIZADA'])
-      .order('hora_inicio', { foreignTable: 'hueco', ascending: true })
     if (error) {
       setError(error.message)
       setCitas([])
     } else {
       setCitas(data || [])
     }
-    setLoading(false)
+    setLastUpdate(new Date())
+    if (opts?.showLoading) setLoading(false)
   }, [fecha])
 
   useEffect(() => {
-    cargar()
+    cargar({ showLoading: true })
 
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
@@ -47,16 +52,29 @@ export function useAgenda(fecha) {
         { event: '*', schema: 'public', table: 'cita' },
         () => cargar()
       )
-      .subscribe()
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'hueco' },
+        () => cargar()
+      )
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED')
+      })
 
     channelRef.current = channel
+
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
 
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
       }
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+      }
     }
   }, [cargar])
 
-  return { citas, loading, error, recargar: cargar }
+  return { citas, loading, error, connected, lastUpdate, recargar: cargar }
 }

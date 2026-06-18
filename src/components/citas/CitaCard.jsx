@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '../ui/Badge'
 
 function formatFecha(fecha) {
@@ -21,11 +22,15 @@ function puedeCancelar(estado, fechaHueco) {
 }
 
 export function CitaCard({ cita, onCancel }) {
+  const navigate = useNavigate()
   const hueco = cita?.hueco
   const mascota = cita?.mascota
 
   return (
-    <div className="bg-white border border-[#E8DDD0] rounded-lg p-4 hover:shadow-sm transition-shadow duration-200">
+    <div
+      className="bg-white border border-[#E8DDD0] rounded-lg p-4 hover:shadow-sm hover:border-[#C2570F]/30 transition-all duration-200 cursor-pointer"
+      onClick={() => navigate(`/cliente/citas/${cita.id}`)}
+    >
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="text-sm font-semibold text-[#C2570F]">
@@ -49,7 +54,7 @@ export function CitaCard({ cita, onCancel }) {
 
       {puedeCancelar(cita.estado, hueco?.fecha) && onCancel && (
         <button
-          onClick={() => onCancel(cita)}
+          onClick={(e) => { e.stopPropagation(); onCancel(cita) }}
           className="text-xs font-medium text-[#B91C1C] hover:text-[#991B1B] transition-colors"
         >
           Cancelar cita

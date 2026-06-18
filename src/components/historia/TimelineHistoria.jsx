@@ -1,6 +1,6 @@
 import { EntradaClinicaItem } from './EntradaClinicaItem'
 
-export function TimelineHistoria({ entradas, loading }) {
+export function TimelineHistoria({ entradas, loading, recetasMap = {} }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -25,7 +25,11 @@ export function TimelineHistoria({ entradas, loading }) {
   return (
     <div className="space-y-1">
       {entradas.map((entrada) => (
-        <EntradaClinicaItem key={entrada.id} entrada={entrada} />
+        <EntradaClinicaItem
+          key={entrada.id}
+          entrada={entrada}
+          receta={entrada.id_cita ? recetasMap[entrada.id_cita] : null}
+        />
       ))}
     </div>
   )

@@ -1,30 +1,41 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { useAdmin } from '../../context/AdminContext'
-import { InfoCitaPanel } from '../../components/atencion/InfoCitaPanel'
-import { PagoModal } from '../../components/atencion/PagoModal'
-import { RecetaForm } from '../../components/atencion/RecetaForm'
-import { HistoriaClinicaPanel } from '../../components/atencion/HistoriaClinicaPanel'
 import { usePago } from '../../hooks/usePago'
 import { useReceta } from '../../hooks/useReceta'
 import { useHistoriaClinica } from '../../hooks/useHistoriaClinica'
-import { useGenerarPdfReceta } from '../../hooks/useGenerarPdfReceta'
+import { TimelineHistoria } from '../../components/historia/TimelineHistoria'
+import { Badge } from '../../components/ui/Badge'
 
-export function DetalleCita() {
+function InfoRow({ label, value }) {
+  return (
+    <div className="flex justify-between py-2 border-b border-[#E8DDD0]/50 last:border-0">
+      <span className="text-xs text-[#7A6555]">{label}</span>
+      <span className="text-sm font-medium text-[#2C1A0E] text-right">{value || '—'}</span>
+    </div>
+  )
+}
+
+function formatHora(hora) {
+  return hora?.slice(0, 5) || '--:--'
+}
+
+function formatFecha(fecha) {
+  if (!fecha) return '--'
+  const d = new Date(fecha + 'T00:00:00')
+  return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+export function DetalleCitaCliente() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { personal } = useAdmin()
-  const { registrarPago, getPagoDeCita, saving: savingPago, error: errorPago } = usePago()
-  const { finalizarAtencion, getRecetaDeCita, saving: savingReceta, error: errorReceta } = useReceta()
-  const { generarPdf, generando: generandoPdf, error: errorPdf } = useGenerarPdfReceta()
+  const { getPagoDeCita } = usePago()
+  const { getRecetaDeCita } = useReceta()
 
   const [cita, setCita] = useState(null)
   const [pagoInfo, setPagoInfo] = useState(null)
   const [recetaInfo, setRecetaInfo] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [showPagoModal, setShowPagoModal] = useState(false)
-  const [mostrandoAtencion, setMostrandoAtencion] = useState(false)
   const [errorCarga, setErrorCarga] = useState(null)
 
   const { entradas, recetasMap, loading: loadingHistoria } = useHistoriaClinica(cita?.mascota?.id)
@@ -66,52 +77,6 @@ export function DetalleCita() {
 
   useEffect(() => { cargar() }, [cargar])
 
-  const handleRegistrarPago = () => setShowPagoModal(true)
-
-  const handleConfirmarPago = async ({ id_metodo_pago, monto }) => {
-    const ok = await registrarPago({
-      id_cita: id,
-      id_metodo_pago,
-      monto,
-      confirmado_por: personal?.id,
-    })
-    if (ok) {
-      setShowPagoModal(false)
-      cargar()
-    }
-  }
-
-  const handleIniciarAtencion = () => setMostrandoAtencion(true)
-
-  const handleFinalizarAtencion = async ({ diagnostico, observaciones, medicamentos, firmado }) => {
-    const ok = await finalizarAtencion({
-      id_cita: id,
-      id_veterinario: personal?.id,
-      diagnostico,
-      observaciones,
-      medicamentos,
-      firmado,
-    })
-    if (ok) {
-      setMostrandoAtencion(false)
-      cargar()
-    }
-  }
-
-  const handleCancelarCita = async () => {
-    if (!window.confirm('¿Estás seguro? Esta acción no se puede deshacer')) return
-    const { error } = await supabase.rpc('cancelar_cita', { p_id_cita: id })
-    if (error) {
-      alert('Error al cancelar cita: ' + error.message)
-      return
-    }
-    navigate('/admin/agenda')
-  }
-
-  const handleGenerarPdf = useCallback(() => {
-    generarPdf({ cita, recetaInfo, personal })
-  }, [cita, recetaInfo, personal, generarPdf])
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -125,48 +90,65 @@ export function DetalleCita() {
       <div className="animate-fade-in-up">
         <div className="bg-white rounded-2xl border border-[#E8DDD0] p-14 flex flex-col items-center justify-center text-center">
           <h2 className="text-lg font-semibold text-[#2C1A0E]">Cita no encontrada</h2>
-          {errorCarga && (
-            <p className="text-sm text-red-600 mt-2">{errorCarga}</p>
-          )}
+          {errorCarga && <p className="text-sm text-red-600 mt-2">{errorCarga}</p>}
+          <button
+            onClick={() => navigate('/cliente/citas')}
+            className="mt-4 text-xs text-[#C2570F] hover:text-[#A8480C] transition-colors"
+          >
+            Volver a mis citas
+          </button>
         </div>
       </div>
     )
   }
 
+  const hueco = cita.hueco
+  const mascota = cita.mascota
+
   return (
     <div className="animate-fade-in-up">
       <div className="mb-6">
         <button
-          onClick={() => navigate('/admin/agenda')}
+          onClick={() => navigate('/cliente/citas')}
           className="text-xs text-[#7A6555] hover:text-[#C2570F] transition-colors mb-2 flex items-center gap-1"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <path d="M10 4L6 8L10 12" />
           </svg>
-          Volver a agenda
+          Volver a mis citas
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <InfoCitaPanel
-            cita={cita}
-            pagoInfo={pagoInfo}
-            onRegistrarPago={handleRegistrarPago}
-            onIniciarAtencion={handleIniciarAtencion}
-            onCancelarCita={handleCancelarCita}
-            onGenerarPdf={handleGenerarPdf}
-            generando={generandoPdf}
-            errorPdf={errorPdf}
-          />
+          <div className="bg-white border border-[#E8DDD0] rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#2C1A0E]">Detalle de cita</h3>
+              <Badge estado={cita.estado} />
+            </div>
+            <div>
+              <InfoRow label="Mascota" value={mascota?.nombre} />
+              <InfoRow label="Especie" value={mascota?.especie_mascota?.nombre} />
+              <InfoRow label="Servicio" value={hueco?.servicio?.nombre} />
+              <InfoRow label="Sala" value={hueco?.sala?.nombre} />
+              <InfoRow label="Fecha" value={formatFecha(hueco?.fecha)} />
+              <InfoRow label="Hora" value={`${formatHora(hueco?.hora_inicio)} - ${formatHora(hueco?.hora_fin)}`} />
+              {cita.cliente?.telefono && <InfoRow label="Teléfono" value={cita.cliente.telefono} />}
+              {hueco?.servicio?.precio && (
+                <InfoRow label="Precio" value={`S/ ${Number(hueco.servicio.precio).toFixed(2)}`} />
+              )}
+            </div>
 
-          {(mostrandoAtencion || cita.estado === 'FINALIZADA') && (
-            <RecetaForm
-              onFinalizar={handleFinalizarAtencion}
-              saving={savingReceta}
-              error={errorReceta}
-            />
-          )}
+            {pagoInfo && (
+              <div className="pt-2 border-t border-[#E8DDD0]">
+                <div className="bg-[#FAF7F2] rounded-lg p-3 space-y-1.5">
+                  <p className="text-xs font-medium text-[#7A6555] uppercase tracking-wide">Pago registrado</p>
+                  <p className="text-sm font-semibold text-[#2C1A0E]">S/ {Number(pagoInfo.monto || 0).toFixed(2)}</p>
+                  <p className="text-xs text-[#7A6555]">{pagoInfo.metodo_pago?.nombre}</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {cita.estado === 'FINALIZADA' && recetaInfo && (
             <div className="bg-white border border-[#E8DDD0] rounded-xl p-5">
@@ -196,27 +178,24 @@ export function DetalleCita() {
                     </div>
                   </div>
                 )}
-                <p className="text-xs text-[#7A6555]">
-                  {recetaInfo.firmado ? '✓ Firmada' : 'Sin firmar'}
-                </p>
+                <div className="flex items-center gap-3 pt-1 text-xs text-[#7A6555]">
+                  {recetaInfo.personal?.nombre && (
+                    <span>Veterinario: {recetaInfo.personal.nombre}</span>
+                  )}
+                  <span>{recetaInfo.firmado ? '✓ Firmada' : 'Sin firmar'}</span>
+                </div>
               </div>
             </div>
           )}
         </div>
 
         <div>
-          <HistoriaClinicaPanel entradas={entradas} loading={loadingHistoria} recetasMap={recetasMap} />
+          <div className="bg-white border border-[#E8DDD0] rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-[#2C1A0E] mb-4">Historia clínica</h3>
+            <TimelineHistoria entradas={entradas} loading={loadingHistoria} recetasMap={recetasMap} />
+          </div>
         </div>
       </div>
-
-      <PagoModal
-        open={showPagoModal}
-        onClose={() => setShowPagoModal(false)}
-        onConfirm={handleConfirmarPago}
-        montoSugerido={cita?.hueco?.servicio?.precio || ''}
-        saving={savingPago}
-        error={errorPago}
-      />
     </div>
   )
 }

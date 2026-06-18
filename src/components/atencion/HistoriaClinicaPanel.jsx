@@ -1,6 +1,6 @@
 import { EntradaClinicaItem } from '../historia/EntradaClinicaItem'
 
-export function HistoriaClinicaPanel({ entradas, loading }) {
+export function HistoriaClinicaPanel({ entradas, loading, recetasMap = {} }) {
   return (
     <div className="bg-white border border-[#E8DDD0] rounded-xl p-5">
       <h3 className="text-sm font-semibold text-[#2C1A0E] mb-4">Historia clínica</h3>
@@ -19,7 +19,11 @@ export function HistoriaClinicaPanel({ entradas, loading }) {
       ) : (
         <div className="space-y-3">
           {entradas.map((entrada) => (
-            <EntradaClinicaItem key={entrada.id} entrada={entrada} />
+            <EntradaClinicaItem
+              key={entrada.id}
+              entrada={entrada}
+              receta={entrada.id_cita ? recetasMap[entrada.id_cita] : null}
+            />
           ))}
         </div>
       )}

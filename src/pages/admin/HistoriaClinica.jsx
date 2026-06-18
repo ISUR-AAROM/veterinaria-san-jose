@@ -9,7 +9,7 @@ export function HistoriaClinica() {
   const navigate = useNavigate()
   const [mascota, setMascota] = useState(null)
   const [loadingMascota, setLoadingMascota] = useState(true)
-  const { entradas, loading: loadingEntradas } = useHistoriaClinica(idMascota)
+  const { entradas, recetasMap, loading: loadingEntradas } = useHistoriaClinica(idMascota)
 
   const cargarMascota = useCallback(async () => {
     if (!idMascota) return
@@ -111,7 +111,7 @@ export function HistoriaClinica() {
       </h2>
 
       <div className="bg-white border border-[#E8DDD0] rounded-xl p-6">
-        <TimelineHistoria entradas={entradas} loading={loadingEntradas} />
+        <TimelineHistoria entradas={entradas} loading={loadingEntradas} recetasMap={recetasMap} />
       </div>
     </div>
   )

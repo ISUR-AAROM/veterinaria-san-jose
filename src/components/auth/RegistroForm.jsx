@@ -41,7 +41,11 @@ function validarMascota(d) {
   const e = {}
   if (!d.nombre.trim()) e.nombre = 'Campo obligatorio'
   if (!d.id_especie) e.id_especie = 'Selecciona una especie'
-  if (!d.fecha_nacimiento) e.fecha_nacimiento = 'Campo obligatorio'
+  if (!d.fecha_nacimiento) {
+    e.fecha_nacimiento = 'Campo obligatorio'
+  } else if (d.fecha_nacimiento > new Date().toISOString().split('T')[0]) {
+    e.fecha_nacimiento = 'La fecha no puede ser futura'
+  }
   return e
 }
 
@@ -100,12 +104,17 @@ export function RegistroForm() {
       })
 
       if (registroError) {
-        setErrorGeneral('Error al completar el registro')
+        console.error('Error en register_cliente RPC:', registroError)
+        try { await supabase.rpc('limpiar_registro_fallido') }
+        catch (e) { console.error('Error al limpiar registro huérfano:', e) }
+        setErrorGeneral(registroError.message)
+        setTimeout(() => setErrorGeneral(''), 8000)
         return
       }
 
       navigate('/cliente/mascotas')
-    } catch {
+    } catch (err) {
+      console.error('Error inesperado en registro:', err)
       setErrorGeneral('Error inesperado. Intenta de nuevo.')
       setTimeout(() => setErrorGeneral(''), 8000)
     }

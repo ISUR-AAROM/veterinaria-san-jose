@@ -6,7 +6,6 @@ import { LayoutCliente } from './components/layout/LayoutCliente'
 import { LayoutAdmin } from './components/layout/LayoutAdmin'
 import { RutaCliente } from './components/layout/RutaCliente'
 import { RutaAdmin } from './components/layout/RutaAdmin'
-import { RutaRol } from './components/layout/RutaRol'
 import { AdminProvider } from './context/AdminContext'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 
@@ -16,6 +15,7 @@ const Registro = lazy(() => import('./pages/publico/Registro').then((m) => ({ de
 
 const MisMascotas = lazy(() => import('./pages/cliente/MisMascotas').then((m) => ({ default: m.MisMascotas })))
 const NuevaMascota = lazy(() => import('./pages/cliente/NuevaMascota').then((m) => ({ default: m.NuevaMascota })))
+const EditarMascota = lazy(() => import('./pages/cliente/EditarMascota').then((m) => ({ default: m.EditarMascota })))
 const MisCitas = lazy(() => import('./pages/cliente/MisCitas').then((m) => ({ default: m.MisCitas })))
 const NuevaCita = lazy(() => import('./pages/cliente/NuevaCita').then((m) => ({ default: m.NuevaCita })))
 const DetalleCitaCliente = lazy(() => import('./pages/cliente/DetalleCitaCliente').then((m) => ({ default: m.DetalleCitaCliente })))
@@ -62,9 +62,10 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <LayoutCliente />,
-        children: [
+          children: [
             { path: 'mascotas', element: withSuspense(<MisMascotas />) },
             { path: 'mascotas/nueva', element: withSuspense(<NuevaMascota />) },
+            { path: 'mascotas/:id/editar', element: withSuspense(<EditarMascota />) },
             { path: 'citas', element: withSuspense(<MisCitas />) },
             { path: 'citas/nueva', element: withSuspense(<NuevaCita />) },
             { path: 'citas/:id', element: withSuspense(<DetalleCitaCliente />) },
@@ -89,21 +90,11 @@ export const router = createBrowserRouter([
               { path: 'clientes/:id', element: withSuspense(<DetalleCliente />) },
               { path: 'citas/:id', element: withSuspense(<DetalleCita />) },
               { path: 'historia/:idMascota', element: withSuspense(<HistoriaClinica />) },
-              {
-                element: <RutaRol accion="personal.gestionar" />,
-                children: [
-                  { path: 'usuarios', element: withSuspense(<Usuarios />) },
-                ],
-              },
-              {
-                element: <RutaRol accion="catalogos" />,
-                children: [
-                  { path: 'catalogos/servicios', element: withSuspense(<Servicios />) },
-                  { path: 'catalogos/salas', element: withSuspense(<Salas />) },
-                  { path: 'catalogos/plantillas', element: withSuspense(<Plantillas />) },
-                  { path: 'catalogos/especies', element: withSuspense(<Especies />) },
-                ],
-              },
+              { path: 'usuarios', element: withSuspense(<Usuarios />) },
+              { path: 'catalogos/servicios', element: withSuspense(<Servicios />) },
+              { path: 'catalogos/salas', element: withSuspense(<Salas />) },
+              { path: 'catalogos/plantillas', element: withSuspense(<Plantillas />) },
+              { path: 'catalogos/especies', element: withSuspense(<Especies />) },
             ],
           },
         ],

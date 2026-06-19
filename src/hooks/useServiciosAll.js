@@ -64,6 +64,17 @@ export function useServiciosAll() {
   const toggleActivo = useCallback(async (id) => {
     const servicio = servicios.find((s) => s.id === id)
     if (!servicio) return
+    if (servicio.is_active) {
+      const { data: plantillas } = await supabase
+        .from('plantilla_horario')
+        .select('id')
+        .eq('id_servicio', id)
+        .eq('is_active', true)
+        .limit(1)
+      if (plantillas?.length > 0) {
+        throw new Error('No se puede desactivar el servicio porque tiene plantillas horario activas')
+      }
+    }
     const { data, error } = await supabase
       .from('servicio')
       .update({ is_active: !servicio.is_active })

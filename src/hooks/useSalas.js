@@ -58,6 +58,17 @@ export function useSalas() {
   const toggleActivo = useCallback(async (id) => {
     const sala = salas.find((s) => s.id === id)
     if (!sala) return
+    if (sala.is_active) {
+      const { data: plantillas } = await supabase
+        .from('plantilla_horario')
+        .select('id')
+        .eq('id_sala', id)
+        .eq('is_active', true)
+        .limit(1)
+      if (plantillas?.length > 0) {
+        throw new Error('No se puede desactivar la sala porque tiene plantillas horario activas')
+      }
+    }
     const { data, error } = await supabase
       .from('sala')
       .update({ is_active: !sala.is_active })

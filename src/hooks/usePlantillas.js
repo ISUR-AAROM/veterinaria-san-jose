@@ -24,6 +24,22 @@ export function usePlantillas() {
   useEffect(() => { cargar() }, [cargar])
 
   const agregar = useCallback(async (datos) => {
+    const { data: sv } = await supabase
+      .from('servicio')
+      .select('id_categoria_sala')
+      .eq('id', datos.id_servicio)
+      .single()
+
+    const { data: sl } = await supabase
+      .from('sala')
+      .select('id_categoria')
+      .eq('id', datos.id_sala)
+      .single()
+
+    if (sv && sl && sv.id_categoria_sala !== sl.id_categoria) {
+      throw new Error('La sala no corresponde a la categoría del servicio')
+    }
+
     const { data, error } = await supabase
       .from('plantilla_horario')
       .insert({
@@ -45,6 +61,22 @@ export function usePlantillas() {
   }, [])
 
   const actualizar = useCallback(async (id, datos) => {
+    const { data: sv } = await supabase
+      .from('servicio')
+      .select('id_categoria_sala')
+      .eq('id', datos.id_servicio)
+      .single()
+
+    const { data: sl } = await supabase
+      .from('sala')
+      .select('id_categoria')
+      .eq('id', datos.id_sala)
+      .single()
+
+    if (sv && sl && sv.id_categoria_sala !== sl.id_categoria) {
+      throw new Error('La sala no corresponde a la categoría del servicio')
+    }
+
     const { data, error } = await supabase
       .from('plantilla_horario')
       .update({

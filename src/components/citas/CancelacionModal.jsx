@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { supabase } from '../../lib/supabase'
@@ -6,13 +6,18 @@ import { supabase } from '../../lib/supabase'
 export function CancelacionModal({ open, onClose, idCita, onConfirmada }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const handleConfirm = async () => {
     setLoading(true)
     setError(null)
-    let isMounted = true
     const { error } = await supabase.rpc('cancelar_cita', { p_id_cita: idCita })
-    if (!isMounted) return
+    if (!mountedRef.current) return
     setLoading(false)
     if (error) {
       setError(error.message)
@@ -20,7 +25,6 @@ export function CancelacionModal({ open, onClose, idCita, onConfirmada }) {
       onConfirmada?.()
       onClose()
     }
-    return () => { isMounted = false }
   }
 
   return (

@@ -22,10 +22,17 @@ const FORM_VACIO = {
   intervalo_minutos: '',
 }
 
-function validar(f) {
+function validar(f, servicios, salas) {
   const e = {}
   if (!f.id_servicio) e.id_servicio = 'Selecciona un servicio'
   if (!f.id_sala) e.id_sala = 'Selecciona una sala'
+  if (f.id_servicio && f.id_sala) {
+    const servicio = servicios.find((s) => s.id === f.id_servicio)
+    const sala = salas.find((s) => s.id === f.id_sala)
+    if (servicio && sala && servicio.categoria_sala?.id !== sala.categoria_sala?.id) {
+      e.id_sala = 'La sala no corresponde a la categoría del servicio'
+    }
+  }
   if (f.dia_semana === '') e.dia_semana = 'Selecciona un día'
   if (!f.hora_inicio) e.hora_inicio = 'Requerido'
   if (!f.hora_fin) e.hora_fin = 'Requerido'
@@ -107,7 +114,7 @@ export function Plantillas() {
   }
 
   const guardar = async () => {
-    const e = validar(form)
+    const e = validar(form, servicios, salas)
     setErrors(e)
     if (Object.keys(e).length > 0) return
     setSaving(true)

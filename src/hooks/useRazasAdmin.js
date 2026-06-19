@@ -41,6 +41,17 @@ export function useRazasAdmin(idEspecie) {
   const toggleRaza = useCallback(async (id) => {
     const raza = razas.find((r) => r.id === id)
     if (!raza) return
+    if (raza.is_active) {
+      const { data: mascotas } = await supabase
+        .from('mascota')
+        .select('id')
+        .eq('id_raza', id)
+        .eq('is_active', true)
+        .limit(1)
+      if (mascotas?.length > 0) {
+        throw new Error('No se puede desactivar la raza porque hay mascotas activas que la usan')
+      }
+    }
     const { data, error } = await supabase
       .from('raza')
       .update({ is_active: !raza.is_active })

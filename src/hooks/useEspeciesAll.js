@@ -61,6 +61,17 @@ export function useEspeciesAll() {
   const toggleActivo = useCallback(async (id) => {
     const especie = especies.find((e) => e.id === id)
     if (!especie) return
+    if (especie.is_active) {
+      const { data: mascotas } = await supabase
+        .from('mascota')
+        .select('id')
+        .eq('id_especie', id)
+        .eq('is_active', true)
+        .limit(1)
+      if (mascotas?.length > 0) {
+        throw new Error('No se puede desactivar la especie porque hay mascotas activas que la usan')
+      }
+    }
     const { data, error } = await supabase
       .from('especie_mascota')
       .update({ is_active: !especie.is_active })

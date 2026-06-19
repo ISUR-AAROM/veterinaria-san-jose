@@ -1,11 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useSession } from '../hooks/useSession'
 
 const AdminContext = createContext(null)
 
 export function AdminProvider({ children }) {
-  const { session } = useSession()
   const [personal, setPersonal] = useState(null)
   const [loading, setLoading] = useState(true)
   const isMounted = useRef(false)
@@ -28,15 +26,22 @@ export function AdminProvider({ children }) {
 
   useEffect(() => {
     isMounted.current = true
-    if (session) {
-      fetchPersonal(session.user.id)
-    } else {
-      setLoading(false)
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!isMounted.current) return
+      if (!session) {
+        setLoading(false)
+        return
+      }
+      await fetchPersonal(session.user.id)
     }
+
+    loadSession()
+
     return () => {
       isMounted.current = false
     }
-  }, [session, fetchPersonal])
+  }, [fetchPersonal])
 
   const setSessionPersonal = useCallback(async (userId) => {
     setLoading(true)

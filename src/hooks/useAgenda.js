@@ -39,56 +39,42 @@ export function useAgenda(fecha) {
   }, [fecha])
 
   useEffect(() => {
-    let cancelled = false
-    const channelName = `agenda-${fecha}-${Date.now()}-${Math.random()}`
+    cargar({ showLoading: true })
 
-    const init = async () => {
-      if (channelRef.current) {
-        await supabase.removeChannel(channelRef.current)
-        channelRef.current = null
-      }
-      if (cancelled) return
-
-      cargar({ showLoading: true })
-
-      if (cancelled) return
-
-      const channel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'cita' },
-          () => cargar()
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'hueco' },
-          () => cargar()
-        )
-        .subscribe((status) => {
-          if (!cancelled) setConnected(status === 'SUBSCRIBED')
-        })
-
-      channelRef.current = channel
-
-      if (pollRef.current) clearInterval(pollRef.current)
-      pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
     }
 
-    init()
+    const channel = supabase
+      .channel(`agenda-${fecha}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cita' },
+        () => cargar()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'hueco' },
+        () => cargar()
+      )
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED')
+      })
+
+    channelRef.current = channel
+
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
 
     return () => {
-      cancelled = true
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
-        channelRef.current = null
       }
       if (pollRef.current) {
         clearInterval(pollRef.current)
-        pollRef.current = null
       }
     }
-  }, [cargar, fecha])
+  }, [cargar])
 
   return { citas, loading, error, connected, lastUpdate, recargar: cargar }
 }

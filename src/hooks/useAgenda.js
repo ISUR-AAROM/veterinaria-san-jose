@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const POLL_INTERVAL_MS = 20000
 
-export function useAgenda(fecha, session) {
+export function useAgenda(fecha) {
   const [citas, setCitas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -39,36 +39,44 @@ export function useAgenda(fecha, session) {
   }, [fecha])
 
   useEffect(() => {
-    if (!session) return
+    let cancelled = false
 
-    cargar({ showLoading: true })
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled || !session) return
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current)
+      cargar({ showLoading: true })
+
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+      }
+
+      const channel = supabase
+        .channel(`agenda-${fecha}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'cita' },
+          () => cargar()
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'hueco' },
+          () => cargar()
+        )
+        .subscribe((status) => {
+          setConnected(status === 'SUBSCRIBED')
+        })
+
+      channelRef.current = channel
+
+      if (pollRef.current) clearInterval(pollRef.current)
+      pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
     }
 
-    const channel = supabase
-      .channel(`agenda-${fecha}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'cita' },
-        () => cargar()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'hueco' },
-        () => cargar()
-      )
-      .subscribe((status) => {
-        setConnected(status === 'SUBSCRIBED')
-      })
-
-    channelRef.current = channel
-
-    if (pollRef.current) clearInterval(pollRef.current)
-    pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
+    init()
 
     return () => {
+      cancelled = true
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
       }
@@ -76,7 +84,7 @@ export function useAgenda(fecha, session) {
         clearInterval(pollRef.current)
       }
     }
-  }, [cargar, session])
+  }, [cargar, fecha])
 
   return { citas, loading, error, connected, lastUpdate, recargar: cargar }
 }

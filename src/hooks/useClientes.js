@@ -61,14 +61,7 @@ export function useClientes() {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    let cancelled = false
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (cancelled || !session) return
-      cargar()
-    })
-    return () => { cancelled = true }
-  }, [cargar])
+  useEffect(() => { cargar() }, [cargar])
 
   return { clientes, loading, error, buscar: cargar }
 }

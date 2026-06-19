@@ -39,44 +39,34 @@ export function useAgenda(fecha) {
   }, [fecha])
 
   useEffect(() => {
-    let cancelled = false
+    cargar({ showLoading: true })
 
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (cancelled || !session) return
-
-      cargar({ showLoading: true })
-
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-      }
-
-      const channel = supabase
-        .channel(`agenda-${fecha}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'cita' },
-          () => cargar()
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'hueco' },
-          () => cargar()
-        )
-        .subscribe((status) => {
-          setConnected(status === 'SUBSCRIBED')
-        })
-
-      channelRef.current = channel
-
-      if (pollRef.current) clearInterval(pollRef.current)
-      pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
     }
 
-    init()
+    const channel = supabase
+      .channel(`agenda-${fecha}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cita' },
+        () => cargar()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'hueco' },
+        () => cargar()
+      )
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED')
+      })
+
+    channelRef.current = channel
+
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
 
     return () => {
-      cancelled = true
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
       }
@@ -84,7 +74,7 @@ export function useAgenda(fecha) {
         clearInterval(pollRef.current)
       }
     }
-  }, [cargar, fecha])
+  }, [cargar])
 
   return { citas, loading, error, connected, lastUpdate, recargar: cargar }
 }

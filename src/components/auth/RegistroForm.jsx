@@ -57,7 +57,7 @@ export function RegistroForm() {
   const [errors, setErrors] = useState({})
   const [errorGeneral, setErrorGeneral] = useState('')
 
-  const ref = useReveal('animate-fade-in-up')
+  const { ref, isVisible } = useReveal()
 
   const handleSiguiente = (e) => {
     e.preventDefault()
@@ -73,6 +73,19 @@ export function RegistroForm() {
     if (Object.keys(e2).length > 0) return
 
     setErrorGeneral('')
+
+    const { data: docExistente } = await supabase
+      .from('cliente')
+      .select('id')
+      .eq('id_tipo_documento', cliente.id_tipo_documento)
+      .eq('numero_documento', cliente.numero_documento.trim())
+      .maybeSingle()
+
+    if (docExistente) {
+      setErrorGeneral('Ya existe un cliente registrado con ese documento de identidad')
+      setTimeout(() => setErrorGeneral(''), 8000)
+      return
+    }
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -104,13 +117,19 @@ export function RegistroForm() {
       })
 
       if (registroError) {
-        setErrorGeneral('Error al completar el registro')
+        console.error('Error en register_cliente RPC:', registroError)
+        try { await supabase.rpc('limpiar_registro_fallido') }
+        catch (e) { console.error('Error al limpiar registro huérfano:', e) }
+        setErrorGeneral(registroError.message)
+        setTimeout(() => setErrorGeneral(''), 8000)
         return
       }
 
       navigate('/cliente/mascotas')
-    } catch {
+    } catch (err) {
+      console.error('Error inesperado en registro:', err)
       setErrorGeneral('Error inesperado. Intenta de nuevo.')
+      setTimeout(() => setErrorGeneral(''), 8000)
     }
   }
 
@@ -119,7 +138,7 @@ export function RegistroForm() {
       <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full bg-[#C2570F]/[0.04] blur-3xl" />
       <div className="absolute bottom-10 right-1/4 w-80 h-80 rounded-full bg-[#4A7C59]/[0.04] blur-3xl" />
 
-      <div ref={ref} className="w-full max-w-lg">
+      <div ref={ref} className={`w-full max-w-lg transition-all duration-700 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}>
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8DDD0] p-8">
           <div className="text-center mb-6">
             <div className="w-14 h-14 bg-[#FFF3EB] rounded-2xl flex items-center justify-center mx-auto mb-4">

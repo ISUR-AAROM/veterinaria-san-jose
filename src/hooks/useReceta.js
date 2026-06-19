@@ -45,6 +45,7 @@ export function useReceta() {
       .from('receta')
       .select(`
         id, diagnostico, observaciones, firmado,
+        personal ( id, nombre ),
         receta_detalle ( id, medicamento, dosis, indicaciones )
       `)
       .eq('id_cita', idCita)

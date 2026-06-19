@@ -17,6 +17,9 @@ export function InfoCitaPanel({
   onRegistrarPago,
   onIniciarAtencion,
   onCancelarCita,
+  onGenerarPdf,
+  generando,
+  errorPdf,
 }) {
   const { can } = usePermisos()
 
@@ -63,6 +66,11 @@ export function InfoCitaPanel({
               <p className="text-xs font-medium text-[#7A6555] uppercase tracking-wide">Pago registrado</p>
               <p className="text-sm font-semibold text-[#2C1A0E]">S/ {Number(pagoInfo.monto || 0).toFixed(2)}</p>
               <p className="text-xs text-[#7A6555]">{pagoInfo.metodo_pago?.nombre}</p>
+              {cita?.hueco?.servicio?.precio && Number(pagoInfo.monto) > Number(cita.hueco.servicio.precio) && (
+                <p className="text-xs font-medium text-green-700">
+                  Vuelto: S/ {(Number(pagoInfo.monto) - Number(cita.hueco.servicio.precio)).toFixed(2)}
+                </p>
+              )}
             </div>
           )}
           {can('atencion.iniciar') && (
@@ -75,9 +83,17 @@ export function InfoCitaPanel({
 
       {cita?.estado === 'FINALIZADA' && (
         <div className="pt-2 border-t border-[#E8DDD0]">
-          <Button variant="secondary" className="w-full" disabled>
-            Ver / Generar PDF receta
+          <Button
+            variant="secondary"
+            className="w-full"
+            onClick={onGenerarPdf}
+            disabled={generando}
+          >
+            {generando ? 'Generando PDF...' : 'Ver / Generar PDF receta'}
           </Button>
+          {errorPdf && (
+            <p className="text-xs text-[#B91C1C] mt-2 text-center">{errorPdf}</p>
+          )}
         </div>
       )}
     </div>

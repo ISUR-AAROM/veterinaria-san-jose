@@ -13,10 +13,8 @@ function parseLocalDate(str) {
 
 function formatDisplay(dateStr) {
   const hoy = localDateStr(new Date())
-  const ayerDate = new Date()
-  ayerDate.setDate(ayerDate.getDate() - 1)
-  const mananaDate = new Date()
-  mananaDate.setDate(mananaDate.getDate() + 1)
+  const mananaDate = new Date(); mananaDate.setDate(mananaDate.getDate() + 1)
+  const ayerDate = new Date(); ayerDate.setDate(ayerDate.getDate() - 1)
 
   if (dateStr === hoy) return 'Hoy'
   if (dateStr === localDateStr(mananaDate)) return 'Mañana'
@@ -32,53 +30,56 @@ export function FiltroFecha({ fecha, onChange }) {
     d.setDate(d.getDate() - 1)
     onChange(localDateStr(d))
   }
-
   const nextDay = () => {
     const d = parseLocalDate(fecha)
     d.setDate(d.getDate() + 1)
     onChange(localDateStr(d))
   }
-
   const hoy = () => onChange(localDateStr(new Date()))
 
   const displayLabel = formatDisplay(fecha)
   const isToday = localDateStr(new Date()) === fecha
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1.5 bg-white border border-[#E8DDD0] rounded-xl px-2 py-1.5 shadow-sm select-none">
       <button
         onClick={prevDay}
-        className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#E8DDD0] text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#2C1A0E] transition-colors"
+        className="h-8 w-8 flex items-center justify-center rounded-lg text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#2C1A0E] transition-all active:scale-95"
       >
         <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M10 4L6 8L10 12" />
         </svg>
       </button>
 
-      <div className="min-w-[140px] text-center">
-        <p className="text-sm font-semibold text-[#2C1A0E]">
+      <div className="min-w-[160px] text-center px-2">
+        <p className="text-sm font-display text-[#2C1A0E] leading-tight">
           {displayLabel.charAt(0).toUpperCase() + displayLabel.slice(1)}
         </p>
-        <p className="text-xs text-[#7A6555]">{fecha}</p>
+        <p className="text-[11px] text-[#7A6555] font-sans">{fecha}</p>
       </div>
 
       <button
         onClick={nextDay}
-        className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#E8DDD0] text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#2C1A0E] transition-colors"
+        className="h-8 w-8 flex items-center justify-center rounded-lg text-[#7A6555] hover:bg-[#FAF7F2] hover:text-[#2C1A0E] transition-all active:scale-95"
       >
         <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M6 4L10 8L6 12" />
         </svg>
       </button>
 
-      {!isToday && (
-        <button
-          onClick={hoy}
-          className="text-xs font-medium text-[#C2570F] hover:text-[#A8480C] transition-colors ml-2"
-        >
-          Volver a hoy
-        </button>
-      )}
+      <div className="w-px h-6 bg-[#E8DDD0] mx-1" />
+
+      <button
+        onClick={hoy}
+        disabled={isToday}
+        className={`text-[11px] font-medium px-2.5 py-1 rounded-md transition-all ${
+          isToday
+            ? 'text-[#BFB5A8] cursor-default'
+            : 'text-[#C2570F] hover:bg-[#FFF3EB] active:scale-95'
+        }`}
+      >
+        Hoy
+      </button>
     </div>
   )
 }

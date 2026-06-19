@@ -18,6 +18,7 @@ const NuevaMascota = lazy(() => import('./pages/cliente/NuevaMascota').then((m) 
 const EditarMascota = lazy(() => import('./pages/cliente/EditarMascota').then((m) => ({ default: m.EditarMascota })))
 const MisCitas = lazy(() => import('./pages/cliente/MisCitas').then((m) => ({ default: m.MisCitas })))
 const NuevaCita = lazy(() => import('./pages/cliente/NuevaCita').then((m) => ({ default: m.NuevaCita })))
+const DetalleCitaCliente = lazy(() => import('./pages/cliente/DetalleCitaCliente').then((m) => ({ default: m.DetalleCitaCliente })))
 
 const AdminLogin = lazy(() => import('./pages/admin/Login'))
 const Agenda = lazy(() => import('./pages/admin/Agenda').then((m) => ({ default: m.Agenda })))
@@ -61,12 +62,13 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <LayoutCliente />,
-        children: [
-          { path: 'mascotas', element: withSuspense(<MisMascotas />) },
-          { path: 'mascotas/nueva', element: withSuspense(<NuevaMascota />) },
-          { path: 'mascotas/:id/editar', element: withSuspense(<EditarMascota />) },
-          { path: 'citas', element: withSuspense(<MisCitas />) },
-          { path: 'citas/nueva', element: withSuspense(<NuevaCita />) },
+          children: [
+            { path: 'mascotas', element: withSuspense(<MisMascotas />) },
+            { path: 'mascotas/nueva', element: withSuspense(<NuevaMascota />) },
+            { path: 'mascotas/:id/editar', element: withSuspense(<EditarMascota />) },
+            { path: 'citas', element: withSuspense(<MisCitas />) },
+            { path: 'citas/nueva', element: withSuspense(<NuevaCita />) },
+            { path: 'citas/:id', element: withSuspense(<DetalleCitaCliente />) },
         ],
       },
     ],

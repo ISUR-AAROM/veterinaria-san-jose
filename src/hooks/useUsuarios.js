@@ -38,6 +38,18 @@ export function useUsuarios() {
     setSaving(true)
     setError(null)
     try {
+      if (datos.tipo === 'CLIENTE' && datos.id_tipo_documento && datos.numero_documento) {
+        const { data: docExistente } = await supabase
+          .from('cliente')
+          .select('id')
+          .eq('id_tipo_documento', datos.id_tipo_documento)
+          .eq('numero_documento', datos.numero_documento.trim())
+          .maybeSingle()
+        if (docExistente) {
+          throw new Error('Ya existe un cliente registrado con ese documento de identidad')
+        }
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: datos.email,
         password: datos.password,

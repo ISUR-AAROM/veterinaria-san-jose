@@ -1,18 +1,24 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 
+const POLL_INTERVAL_MS = 20000
+
 export function useAgenda(fecha) {
   const [citas, setCitas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [connected, setConnected] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(null)
   const channelRef = useRef(null)
+  const pollRef = useRef(null)
   const cargandoRef = useRef(false)
 
-  const cargar = useCallback(async () => {
+  const cargar = useCallback(async (opts) => {
     if (cargandoRef.current) return
     cargandoRef.current = true
-    setLoading(true)
     setError(null)
+
+    if (opts?.showLoading) setLoading(true)
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
@@ -42,6 +48,7 @@ export function useAgenda(fecha) {
       } else {
         setCitas(data || [])
       }
+      setLastUpdate(new Date())
     } catch (err) {
       setError(err.message)
       setCitas([])
@@ -60,7 +67,7 @@ export function useAgenda(fecha) {
   }, [citas])
 
   useEffect(() => {
-    cargar()
+    cargar({ showLoading: true })
 
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
@@ -73,16 +80,29 @@ export function useAgenda(fecha) {
         { event: '*', schema: 'public', table: 'cita' },
         () => cargar()
       )
-      .subscribe()
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'hueco' },
+        () => cargar()
+      )
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED')
+      })
 
     channelRef.current = channel
+
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => cargar(), POLL_INTERVAL_MS)
 
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
       }
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+      }
     }
   }, [cargar])
 
-  return { citas: citasOrdenadas, loading, error, recargar: cargar }
+  return { citas: citasOrdenadas, loading, error, connected, lastUpdate, recargar: cargar }
 }

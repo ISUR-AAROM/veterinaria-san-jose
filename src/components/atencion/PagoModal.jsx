@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { Select } from '../ui/Select'
@@ -11,10 +11,22 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
   const [monto, setMonto] = useState(montoSugerido || '')
   const [errors, setErrors] = useState({})
 
+  const precioServicio = parseFloat(montoSugerido) || 0
+  const montoNumerico = parseFloat(monto) || 0
+
+  const vuelto = useMemo(() => {
+    if (!precioServicio || montoNumerico <= precioServicio) return 0
+    return montoNumerico - precioServicio
+  }, [montoNumerico, precioServicio])
+
   const handleConfirm = async () => {
     const e = {}
     if (!idMetodoPago) e.metodo = 'Selecciona un método de pago'
-    if (!monto || isNaN(monto) || parseFloat(monto) <= 0) e.monto = 'Ingresa un monto válido'
+    if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
+      e.monto = 'Ingresa un monto válido'
+    } else if (precioServicio > 0 && parseFloat(monto) < precioServicio) {
+      e.monto = `El monto no puede ser menor a S/ ${precioServicio.toFixed(2)}`
+    }
     setErrors(e)
     if (Object.keys(e).length > 0) return
     if (typeof onConfirm !== 'function') return
@@ -45,6 +57,13 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
           </div>
         </div>
 
+        {precioServicio > 0 && (
+          <div className="bg-[#FAF7F2] rounded-lg p-3 mb-4">
+            <p className="text-xs text-[#7A6555]">Precio del servicio</p>
+            <p className="text-lg font-semibold text-[#2C1A0E]">S/ {precioServicio.toFixed(2)}</p>
+          </div>
+        )}
+
         {!loadingMetodos && (metodos || []).length > 0 && (
           <Select
             label="Método de pago"
@@ -68,6 +87,13 @@ export function PagoModal({ open, onClose, onConfirm, montoSugerido, saving, err
             placeholder="0.00"
           />
         </div>
+
+        {vuelto > 0 && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+            <p className="text-xs text-green-700">Vuelto</p>
+            <p className="text-lg font-semibold text-green-800">S/ {vuelto.toFixed(2)}</p>
+          </div>
+        )}
 
         {error && (
           <p className="text-xs text-[#B91C1C] mt-3">{error}</p>

@@ -1,10 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-/**
- * Hook para que un CLIENTE gestione sus propias mascotas.
- * Filtra automáticamente por el cliente logueado (vía id_cuenta -> cliente.id).
- */
 export function useMascotas() {
   const [mascotas, setMascotas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -21,7 +17,6 @@ export function useMascotas() {
       return
     }
 
-    // Buscar el id de cliente asociado a la cuenta
     const { data: cliente, error: clienteError } = await supabase
       .from('cliente')
       .select('id')
@@ -80,7 +75,6 @@ export function useMascotas() {
       .single()
     if (mascotaError) throw mascotaError
 
-    // Crear historia clínica vinculada automáticamente
     const { error: historiaError } = await supabase
       .from('historia_clinica')
       .insert({ id_mascota: mascota.id })
@@ -91,6 +85,28 @@ export function useMascotas() {
   }, [])
 
   const actualizar = useCallback(async (id, datos) => {
+    const { data: current } = await supabase
+      .from('mascota')
+      .select('id_especie, id_raza')
+      .eq('id', id)
+      .single()
+
+    if (current) {
+      const especieChanged = datos.id_especie !== current.id_especie
+      const razaChanged = (datos.id_raza || null) !== (current.id_raza || null)
+      if (especieChanged || razaChanged) {
+        const { data: citas } = await supabase
+          .from('cita')
+          .select('id')
+          .eq('id_mascota', id)
+          .in('estado', ['PROGRAMADA', 'EN_ESPERA'])
+          .limit(1)
+        if (citas?.length > 0) {
+          throw new Error('No se puede cambiar la especie o raza porque la mascota tiene citas programadas o en espera')
+        }
+      }
+    }
+
     const { data, error } = await supabase
       .from('mascota')
       .update({
@@ -112,6 +128,15 @@ export function useMascotas() {
   }, [])
 
   const desactivar = useCallback(async (id) => {
+    const { data: citas } = await supabase
+      .from('cita')
+      .select('id')
+      .eq('id_mascota', id)
+      .in('estado', ['PROGRAMADA', 'EN_ESPERA'])
+      .limit(1)
+    if (citas?.length > 0) {
+      throw new Error('No se puede desactivar la mascota porque tiene citas programadas o en espera')
+    }
     const { error } = await supabase
       .from('mascota')
       .update({ is_active: false })

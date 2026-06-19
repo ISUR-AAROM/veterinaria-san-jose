@@ -4,6 +4,7 @@ import { HuecoCitaCard } from '../../components/agenda/HuecoCitaCard'
 import { useAgenda } from '../../hooks/useAgenda'
 import { useSalas } from '../../hooks/useSalas'
 import { useServicios } from '../../hooks/useServicios'
+import { useSession } from '../../hooks/useSession'
 
 function formatDate(d) {
   const y = d.getFullYear()
@@ -58,7 +59,8 @@ function LiveDot({ connected }) {
 
 export function Agenda() {
   const [fecha, setFecha] = useState(() => formatDate(new Date()))
-  const { citas, loading, error, connected, lastUpdate, recargar } = useAgenda(fecha)
+  const { session } = useSession()
+  const { citas, loading, error, connected, lastUpdate, recargar } = useAgenda(fecha, session)
   const { salas, loading: loadingSalas, error: errorSalas } = useSalas()
   const { servicios } = useServicios()
   const [busqueda, setBusqueda] = useState('')

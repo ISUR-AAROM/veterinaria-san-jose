@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const POLL_INTERVAL_MS = 20000
 
-export function useAgenda(fecha) {
+export function useAgenda(fecha, session) {
   const [citas, setCitas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -39,6 +39,8 @@ export function useAgenda(fecha) {
   }, [fecha])
 
   useEffect(() => {
+    if (!session) return
+
     cargar({ showLoading: true })
 
     if (channelRef.current) {
@@ -74,7 +76,7 @@ export function useAgenda(fecha) {
         clearInterval(pollRef.current)
       }
     }
-  }, [cargar])
+  }, [cargar, session])
 
   return { citas, loading, error, connected, lastUpdate, recargar: cargar }
 }
